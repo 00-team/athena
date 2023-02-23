@@ -3,12 +3,15 @@ import json
 
 from src.logger import get_logger
 from src.settings import BASE_DIR
+from src.tools import now
 
 logger = get_logger()
 
 
 DATABASE_PATH = BASE_DIR / 'data/database.json'
 DATABASE = {}
+# EXPIRE_TIME = 6 * 60 * 60
+EXPIRE_TIME = 7
 
 
 def setup_database():
@@ -33,8 +36,29 @@ def setup_database():
         raise ValueError('invalid database')
 
 
+# run this after each database change
+def save_database():
+    with open(DATABASE_PATH, 'w') as f:
+        json.dump(DATABASE, f)
+
+
 def check_user_id(user_id):
-    pass
+    if user_id not in DATABASE:
+        logger.info(f'{user_id=} dose not exists in the database')
+        DATABASE[user_id] = now() + EXPIRE_TIME
+        save_database()
+        return
+
+    expire_date = DATABASE[user_id]
+    dt = now()
+
+    if expire_date > dt:
+        logger.info(f'{user_id=} exists | {expire_date-dt}s')
+        return
+
+    logger.info(f'{user_id=} exists and the time is expired')
+    DATABASE[user_id] = now() + EXPIRE_TIME
+    save_database()
 
 
 def main():
