@@ -1,11 +1,11 @@
-from telebot.async_telebot import AsyncTeleBot
+import asyncio
 import json
 
+from telebot.async_telebot import AsyncTeleBot
 
 bot = AsyncTeleBot('1918298985:AAFCpS_4svAB5UbneTiMZ-ooumJsN5Cl-x0')
 
 channel_id = "@afjdkdjsklska09312"
-
 
 
 async def check_user_joined(message):
@@ -24,20 +24,23 @@ async def send_welcome(message):
     await bot.reply_to(message, "hi this is test")
 
 
-
-
-@bot.message_handler(func=lambda message: True, content_types=['photo', 'video', 'text'])
+@bot.message_handler(
+    func=lambda message: True,
+    content_types=['photo', 'video', 'text']
+)
 async def echo_message(message):
     if (await check_user_joined(message)):
         return
     is_forwarded_from_channel = message.forward_from_chat.type
     print(is_forwarded_from_channel)
     if is_forwarded_from_channel == "channel":
-        await bot.forward_message(chat_id=channel_id, from_chat_id=message.chat.id, message_id=message.message_id)
+        await bot.forward_message(
+            chat_id=channel_id,
+            from_chat_id=message.chat.id,
+            message_id=message.message_id
+        )
     else:
         await bot.reply_to(message, "mayel be tamayol?😈🔞")
 
 
-
-import asyncio
 asyncio.run(bot.polling())
