@@ -1,73 +1,65 @@
 
-import json
+import asyncio
 
+from telebot.async_telebot import AsyncTeleBot
+
+from src.database import check_user_id, setup_database
 from src.logger import get_logger
-from src.settings import BASE_DIR
-from src.tools import now
+from src.settings import SECRETS
 
 logger = get_logger()
 
-
-DATABASE_PATH = BASE_DIR / 'data/database.json'
-DATABASE = {}
-# EXPIRE_TIME = 6 * 60 * 60
-EXPIRE_TIME = 7
+bot = AsyncTeleBot(SECRETS['TOKEN'])
+channel_id = SECRETS['CHANNEL_ID']
 
 
-def setup_database():
-    global DATABASE
+async def check_user_joined(message):
+    member = await bot.get_chat_member(
+        chat_id=channel_id,
+        user_id=message.from_user.id
+    )
 
-    if not DATABASE_PATH.exists():
-        # create the data directory
-        DATABASE_PATH.parent.mkdir(exist_ok=True)
+    if member.status in ['member', 'creator']:
+        return False
+    else:
+        await bot.reply_to(message, 'please join to channel')
+        return True
 
-        # init the file
-        with open(DATABASE_PATH, 'w') as f:
-            f.write('{}\n')
 
+@bot.message_handler(commands=['start'])
+async def send_welcome(message):
+    if (await check_user_joined(message)):
         return
 
-    # so if there is a database then read the data
-    with open(DATABASE_PATH, 'r') as f:
-        DATABASE = json.load(f)
-
-    # check if database is valid or not
-    if not isinstance(DATABASE, dict):
-        raise ValueError('invalid database')
+    await bot.reply_to(message, 'hi this is test')
 
 
-# run this after each database change
-def save_database():
-    with open(DATABASE_PATH, 'w') as f:
-        json.dump(DATABASE, f)
-
-
-def check_user_id(user_id):
-    if user_id not in DATABASE:
-        logger.info(f'{user_id=} dose not exists in the database')
-        DATABASE[user_id] = now() + EXPIRE_TIME
-        save_database()
+@bot.message_handler(
+    func=lambda message: True,
+    content_types=['photo', 'video', 'text']
+)
+async def echo_message(message):
+    if (await check_user_joined(message)):
         return
 
-    expire_date = DATABASE[user_id]
-    dt = now()
+    is_forwarded_from_channel = message.forward_from_chat.type
 
-    if expire_date > dt:
-        logger.info(f'{user_id=} exists | {expire_date-dt}s')
-        return
+    print(is_forwarded_from_channel)
 
-    logger.info(f'{user_id=} exists and the time is expired')
-    DATABASE[user_id] = now() + EXPIRE_TIME
-    save_database()
+    if is_forwarded_from_channel == 'channel':
+        await bot.forward_message(
+            chat_id=channel_id,
+            from_chat_id=message.chat.id,
+            message_id=message.message_id
+        )
+    else:
+        await bot.reply_to(message, 'mayel be tamayol?😈🔞')
 
 
 def main():
     logger.info('Starting Athena')
     setup_database()
-
-    while True:
-        user_id = input('Enter User ID > ')
-        check_user_id(user_id)
+    asyncio.run(bot.polling())
 
 
 if __name__ == '__main__':
