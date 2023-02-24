@@ -3,7 +3,14 @@ import json
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
-DATABASE_PATH = BASE_DIR / 'data/database.json'
+DATA_DIR = BASE_DIR / 'data'
+
+# make the data dir if not exists
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+USER_DB_PATH = DATA_DIR / 'users.json'
+CHANNEL_DB_PATH = DATA_DIR / 'channels.json'
+
 
 # EXPIRE_TIME = 6 * 60 * 60
 EXPIRE_TIME = 7

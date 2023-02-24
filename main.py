@@ -3,62 +3,72 @@ import asyncio
 
 from telebot.async_telebot import AsyncTeleBot
 
-from src.database import check_user_id, setup_database
+from src.database import CHANNEL_DB, check_user, setup_databases
 from src.logger import get_logger
 from src.settings import SECRETS
 
 logger = get_logger()
 
 bot = AsyncTeleBot(SECRETS['TOKEN'])
-channel_id = SECRETS['CHANNEL_ID']
+MAIN_CHANNEL = SECRETS['CHANNEL']
 
 
-async def check_user_joined(message):
-    member = await bot.get_chat_member(
-        chat_id=channel_id,
-        user_id=message.from_user.id
-    )
+def require_joined(func):
+    async def decorator(message):
+        for channel_id in CHANNEL_DB:
+            member = await bot.get_chat_member(
+                chat_id=channel_id,
+                user_id=message.from_user.id
+            )
 
-    if member.status in ['member', 'creator']:
-        return False
-    else:
-        await bot.reply_to(message, 'please join to channel')
-        return True
+            if member.status in ['left', 'kicked']:
+                await bot.reply_to(message, f'join to {channel_id} first')
+                break
+
+        else:
+            func(message)
 
 
 @bot.message_handler(commands=['start'])
-async def send_welcome(message):
-    if (await check_user_joined(message)):
-        return
-
+@require_joined
+async def start(message):
     await bot.reply_to(message, 'hi this is test')
 
 
+def check_forwarded(m):
+    return m and m.forward_from_chat and m.forward_from_chat.type == 'channel'
+
+
 @bot.message_handler(
-    func=lambda message: True,
+    func=check_forwarded,
     content_types=['photo', 'video', 'text']
 )
-async def echo_message(message):
-    if (await check_user_joined(message)):
+@require_joined
+async def send_message(message):
+    exp = check_user(message.from_user.id)
+    if exp:
+        bot.reply_to(message, f'you already send a message. wait about {exp}s')
         return
 
-    is_forwarded_from_channel = message.forward_from_chat.type
+    await bot.forward_message(
+        chat_id=MAIN_CHANNEL,
+        from_chat_id=message.chat.id,
+        message_id=message.message_id
+    )
 
-    print(is_forwarded_from_channel)
 
-    if is_forwarded_from_channel == 'channel':
-        await bot.forward_message(
-            chat_id=channel_id,
-            from_chat_id=message.chat.id,
-            message_id=message.message_id
-        )
-    else:
-        await bot.reply_to(message, 'mayel be tamayol?😈🔞')
+@bot.chat_member_handler()
+async def chat_update(update):
+    logger.debug('-'*20)
+    logger.debug('title', update.chat.title)
+    logger.debug('old', update.old_chat_member)
+    logger.debug('new', update.new_chat_member)
+    logger.debug('_'*20)
 
 
 def main():
     logger.info('Starting Athena')
-    setup_database()
+    setup_databases()
     asyncio.run(bot.polling())
 
 
