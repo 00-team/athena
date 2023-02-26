@@ -62,11 +62,14 @@ async def send_message(message):
 
 @bot.my_chat_member_handler()
 async def chat_update(update):
-    if update.from_user.id != 224575002:
+    if update.from_user.id not in SECRETS['ADMINS']:
+        await bot.leave_chat(update.chat.id)
         return
     if update.chat.type not in ['channel','supergroup']:
+        await bot.leave_chat(update.chat.id)
         return
-    if update.new_chat_member.status != "kicked":
+    if update.new_chat_member.status != "administrator":
+        await bot.leave_chat(update.chat.id)
         return
     
 
