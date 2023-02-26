@@ -6,7 +6,7 @@ from telebot.async_telebot import AsyncTeleBot
 from src.database import CHANNEL_DB, check_user, setup_databases
 from src.logger import get_logger
 from src.settings import SECRETS
-
+from src.database import channel_add, channel_remove
 logger = get_logger()
 
 bot = AsyncTeleBot(SECRETS['TOKEN'])
@@ -68,11 +68,11 @@ async def chat_update(update):
     if update.chat.type not in ['channel','supergroup']:
         await bot.leave_chat(update.chat.id)
         return
-    if update.new_chat_member.status != "administrator":
+    if update.new_chat_member.status == "administrator":
+        channel_add(update.chat.id)
+    else:
+        channel_remove(update.chat.id)
         await bot.leave_chat(update.chat.id)
-        return
-    
-
 
 
 def main():
