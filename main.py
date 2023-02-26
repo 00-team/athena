@@ -26,7 +26,9 @@ def require_joined(func):
                 break
 
         else:
-            func(message)
+            await func(message)
+    return decorator
+            
 
 
 @bot.message_handler(commands=['start'])

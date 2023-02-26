@@ -2,7 +2,7 @@
 import json
 
 from .logger import get_logger
-from .settings import CHANNEL_DB_PATH, EXPIRE_TIME, USERS_DB_PATH
+from .settings import CHANNEL_DB_PATH, EXPIRE_TIME, USER_DB_PATH
 from .tools import now
 
 logger = get_logger('database')
@@ -33,7 +33,7 @@ def _setup_db(db, path):
 def setup_databases():
     global USER_DB, CHANNEL_DB
 
-    USER_DB = _setup_db(USER_DB, USERS_DB_PATH)
+    USER_DB = _setup_db(USER_DB, USER_DB_PATH)
     CHANNEL_DB = _setup_db(CHANNEL_DB, CHANNEL_DB_PATH)
 
 
@@ -44,7 +44,7 @@ def check_user(user_id):
         logger.debug(f'{user_id=} dose not exists in the database')
 
         USER_DB[user_id] = now() + EXPIRE_TIME
-        _save_db(USER_DB, USERS_DB_PATH)
+        _save_db(USER_DB, USER_DB_PATH)
 
         return 0
 
@@ -57,7 +57,7 @@ def check_user(user_id):
     logger.debug(f'{user_id=} exists and the time is expired')
 
     USER_DB[user_id] = now() + EXPIRE_TIME
-    _save_db(USER_DB, USERS_DB_PATH)
+    _save_db(USER_DB, USER_DB_PATH)
 
     return 0
 
