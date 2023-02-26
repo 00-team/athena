@@ -59,25 +59,16 @@ async def send_message(message):
     )
 
 
-def check_chat_type(m):
-    return m.chat.type
 
 @bot.my_chat_member_handler()
 async def chat_update(update):
-    # print('-'*20)
-    # print('title', update.chat.title)
-    # print('old', update.old_chat_member)
-    # print('new', update.new_chat_member)
-    # print('_'*20)
-    #this true bot have problem
-    is_owner = update.from_user.id
-    if int(is_owner) == 224575002:
-        if check_chat_type == "channel" or "supergroup":
-            print("join process successfuly")
-        else:
-            await bot.leave_chat(update.chat.id)
-            print("leave process successfuly")
-            return
+    if update.from_user.id != 224575002:
+        return
+    if update.chat.type not in ['channel','supergroup']:
+        return
+    if update.new_chat_member.status != "kicked":
+        return
+    
 
 
 
