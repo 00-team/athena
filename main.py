@@ -65,11 +65,14 @@ async def chat_update(update):
     if update.from_user.id not in SECRETS['ADMINS']:
         await bot.leave_chat(update.chat.id)
         return
+    
     if update.chat.type not in ['channel','supergroup']:
         await bot.leave_chat(update.chat.id)
         return
-    if update.new_chat_member.status == "administrator":
+    
+    if update.new_chat_member.status == 'administrator':
         channel_add(update.chat.id)
+        await bot.send_message(update.from_user.id, 'channel was added')
     else:
         channel_remove(update.chat.id)
         await bot.leave_chat(update.chat.id)
