@@ -69,6 +69,7 @@ async def start(message):
 
         await bot.reply_to(
             message,
+            'Markup',
             reply_markup=InlineKeyboardMarkup(chats)
         )
 
