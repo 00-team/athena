@@ -63,7 +63,7 @@ async def start(message):
                 InlineKeyboardButton(chat.title, url=chat.invite_link),
                 InlineKeyboardButton(
                     enable,
-                    callback_data=f'toggle-chat-{chat.id}'
+                    # callback_data=f'toggle-chat-{chat.id}'
                 ),
             ])
 
