@@ -4,7 +4,8 @@ import asyncio
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from src.database import channel_add, channel_remove, check_user, get_channels
+from src.database import channel_add, channel_remove, channel_toggle
+from src.database import check_user, get_channels, get_keyboard_chats
 from src.database import setup_databases
 from src.logger import get_logger
 from src.settings import SECRETS
@@ -54,23 +55,10 @@ def require_joined(func):
 async def start(message):
     user_id = message.from_user.id
     if user_id in SECRETS['ADMINS']:
-        chats = []
-        for c in get_channels():
-            enable = '✅' if c['enable'] else '❌'
-            chat = await bot.get_chat(c['id'])
-
-            chats.append([
-                InlineKeyboardButton(chat.title, url=chat.invite_link),
-                InlineKeyboardButton(
-                    enable,
-                    callback_data=f'toggle-chat-{chat.id}'
-                ),
-            ])
-
         await bot.reply_to(
             message,
             'Markup',
-            reply_markup=InlineKeyboardMarkup(chats)
+            reply_markup=await get_keyboard_chats(bot)
         )
 
     else:
@@ -101,10 +89,6 @@ async def send_message(message):
 
 @bot.my_chat_member_handler()
 async def chat_update(update):
-    # if update.from_user.id not in SECRETS['ADMINS']:
-    #     await bot.leave_chat(update.chat.id)
-    #     return
-
     if update.chat.type not in ['channel', 'supergroup']:
         await bot.leave_chat(update.chat.id)
         return
@@ -122,6 +106,18 @@ async def chat_update(update):
     else:
         channel_remove(update.chat.id)
         await bot.leave_chat(update.chat.id)
+
+
+@bot.callback_query_handler()
+async def query_update(update):
+
+    print(update.data)
+    # channel_toggle()
+    await bot.edit_message_reply_markup(
+        update.message.sender_chat.id,
+        update.message.id,
+        reply_markup=await get_keyboard_chats(bot)
+    )
 
 
 def main():

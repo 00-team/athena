@@ -1,6 +1,8 @@
 
 import json
 
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+
 from .logger import get_logger
 from .settings import CHANNEL_DB_PATH, EXPIRE_TIME, USER_DB_PATH
 from .tools import now
@@ -43,6 +45,23 @@ def get_users():
 
 def get_channels():
     return _CHANNEL_DB
+
+
+async def get_keyboard_chats(bot):
+    chats = []
+    for c in _CHANNEL_DB:
+        enable = '✅' if c['enable'] else '❌'
+        chat = await bot.get_chat(c['id'])
+
+        chats.append([
+            InlineKeyboardButton(chat.title, url=chat.invite_link),
+            InlineKeyboardButton(
+                enable,
+                callback_data=f'toggle-chat-{chat.id}'
+            ),
+        ])
+
+    return InlineKeyboardMarkup(chats)
 
 
 def check_user(user_id):
@@ -89,3 +108,14 @@ def channel_remove(channel_id: int):
         if c['id'] == channel_id:
             _CHANNEL_DB.remove(c)
             _save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
+
+
+def channel_toggle(channel_id: int):
+    global _CHANNEL_DB
+
+    for idx, c in enumerate(_CHANNEL_DB):
+        if c['id'] == channel_id:
+            c['enable'] = not c['enable']
+            _CHANNEL_DB[idx] = c
+            _save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
+            break
