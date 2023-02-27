@@ -62,22 +62,22 @@ def check_user(user_id):
     return 0
 
 
-def channel_add(channel_id: str):
+def channel_add(channel):
     global CHANNEL_DB
 
     # check if channel exists or not
-    if channel_id in CHANNEL_DB:
-        return
+    for c in CHANNEL_DB:
+        if c['id'] == channel['id']:
+            return
 
-    CHANNEL_DB.append(channel_id)
+    CHANNEL_DB.append(channel)
     _save_db(CHANNEL_DB, CHANNEL_DB_PATH)
 
 
-def channel_remove(channel_id: str):
+def channel_remove(channel_id: int):
     global CHANNEL_DB
 
-    if channel_id not in CHANNEL_DB:
-        return
-
-    CHANNEL_DB.remove(channel_id)
-    _save_db(CHANNEL_DB, CHANNEL_DB_PATH)
+    for c in CHANNEL_DB:
+        if c['id'] == channel_id:
+            CHANNEL_DB.remove(c)
+            _save_db(CHANNEL_DB, CHANNEL_DB_PATH)
