@@ -7,8 +7,8 @@ from .tools import now
 
 logger = get_logger('database')
 
-USER_DB = {}
-CHANNEL_DB = []
+_USER_DB = {}
+_CHANNEL_DB = []
 
 
 def _save_db(db, path):
@@ -31,24 +31,32 @@ def _setup_db(db, path):
 
 
 def setup_databases():
-    global USER_DB, CHANNEL_DB
+    global _USER_DB, _CHANNEL_DB
 
-    USER_DB = _setup_db(USER_DB, USER_DB_PATH)
-    CHANNEL_DB = _setup_db(CHANNEL_DB, CHANNEL_DB_PATH)
+    _USER_DB = _setup_db(_USER_DB, USER_DB_PATH)
+    _CHANNEL_DB = _setup_db(_CHANNEL_DB, CHANNEL_DB_PATH)
+
+
+def get_users():
+    return _USER_DB
+
+
+def get_channels():
+    return _CHANNEL_DB
 
 
 def check_user(user_id):
     user_id = str(user_id)
 
-    if user_id not in USER_DB:
+    if user_id not in _USER_DB:
         logger.debug(f'{user_id=} dose not exists in the database')
 
-        USER_DB[user_id] = now() + EXPIRE_TIME
-        _save_db(USER_DB, USER_DB_PATH)
+        _USER_DB[user_id] = now() + EXPIRE_TIME
+        _save_db(_USER_DB, USER_DB_PATH)
 
         return 0
 
-    expire_date = USER_DB[user_id] - now()
+    expire_date = _USER_DB[user_id] - now()
 
     if expire_date > 0:
         logger.debug(f'{user_id=} exists | {expire_date}s')
@@ -56,28 +64,28 @@ def check_user(user_id):
 
     logger.debug(f'{user_id=} exists and the time is expired')
 
-    USER_DB[user_id] = now() + EXPIRE_TIME
-    _save_db(USER_DB, USER_DB_PATH)
+    _USER_DB[user_id] = now() + EXPIRE_TIME
+    _save_db(_USER_DB, USER_DB_PATH)
 
     return 0
 
 
 def channel_add(channel):
-    global CHANNEL_DB
+    global _CHANNEL_DB
 
     # check if channel exists or not
-    for c in CHANNEL_DB:
+    for c in _CHANNEL_DB:
         if c['id'] == channel['id']:
             return
 
-    CHANNEL_DB.append(channel)
-    _save_db(CHANNEL_DB, CHANNEL_DB_PATH)
+    _CHANNEL_DB.append(channel)
+    _save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
 
 
 def channel_remove(channel_id: int):
-    global CHANNEL_DB
+    global _CHANNEL_DB
 
-    for c in CHANNEL_DB:
+    for c in _CHANNEL_DB:
         if c['id'] == channel_id:
-            CHANNEL_DB.remove(c)
-            _save_db(CHANNEL_DB, CHANNEL_DB_PATH)
+            _CHANNEL_DB.remove(c)
+            _save_db(_CHANNEL_DB, CHANNEL_DB_PATH)

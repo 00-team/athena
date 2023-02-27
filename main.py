@@ -4,7 +4,7 @@ import asyncio
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from src.database import CHANNEL_DB, channel_add, channel_remove, check_user
+from src.database import channel_add, channel_remove, check_user, get_channels
 from src.database import setup_databases
 from src.logger import get_logger
 from src.settings import SECRETS
@@ -20,7 +20,7 @@ def require_joined(func):
         not_joined = []
         user_id = message.from_user.id
 
-        for channel in CHANNEL_DB:
+        for channel in get_channels():
             if not channel['enable']:
                 continue
 
@@ -55,7 +55,7 @@ async def start(message):
     user_id = message.from_user.id
     if user_id in SECRETS['ADMINS']:
         chats = []
-        for c in CHANNEL_DB:
+        for c in get_channels():
             enable = '✅' if c['enable'] else '❌'
             chat = await bot.get_chat(c['id'])
 
