@@ -1,0 +1,12 @@
+[Unit]
+Description=Gort Bot
+
+[Service]
+Type=simple
+User=root
+ExecStart=/site/gort/.env/bin/python /site/gort/bot/main.py
+Environment=PYTHONUNBUFFERED=1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
