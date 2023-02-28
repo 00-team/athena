@@ -57,7 +57,7 @@ async def get_keyboard_chats(bot):
             InlineKeyboardButton(chat.title, url=chat.invite_link),
             InlineKeyboardButton(
                 enable,
-                callback_data=f'toggle-chat-{chat.id}'
+                callback_data=f'toggle_chat#{chat.id}'
             ),
         ])
 

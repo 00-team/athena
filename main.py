@@ -111,11 +111,24 @@ async def chat_update(update):
         channel_remove(update.chat.id)
         await bot.leave_chat(update.chat.id)
 
+def check_query(u):
+    if not u.data:
+        return False
+    if not u.message:
+        return False
+    res = u.data.split('#')
+    if len(res) != 2:
+        return False
+    if res[0] != "toggle_chat":
+        return False
 
-@bot.callback_query_handler()
+
+@bot.callback_query_handler(func=check_query)
 async def query_update(update):
 
     print(update.data)
+    print(update.id)
+    print(update.from_user.id)
     # channel_toggle()
     await bot.edit_message_reply_markup(
         update.message.sender_chat.id,
