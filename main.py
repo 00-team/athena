@@ -7,6 +7,7 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from src.database import channel_add, channel_remove, channel_toggle
 from src.database import check_user, get_channels, get_keyboard_chats
 from src.database import setup_databases
+from src.database import get_users
 from src.logger import get_logger
 from src.settings import SECRETS
 
@@ -30,16 +31,17 @@ def require_joined(func):
                 continue
 
             chat_id = channel['id']
-            member = await bot.get_chat_member(
+            try: member = await bot.get_chat_member(
                 chat_id=chat_id,
                 user_id=user_id,
-            )
-
-            if member.status in ['left', 'kicked']:
-                chat = await bot.get_chat(chat_id)
-                not_joined.append(
-                    [InlineKeyboardButton(chat.title, url=chat.invite_link)]
                 )
+
+            except:
+                if member.status in ['left', 'kicked']:
+                    chat = await bot.get_chat(chat_id)
+                    not_joined.append(
+                    [InlineKeyboardButton(chat.title, url=chat.invite_link)]
+                    )
 
         if not_joined:
             await bot.send_message(
@@ -90,13 +92,21 @@ async def send_message(message):
         message_id=message.message_id
     )
 
+# @bot.message_handler(commands=['ftoall'])
+# @require_joined
+# async def forward_to_all(message):
+#     uid = {}
+#     user_id = message.from_user.id
+#     if user_id in SECRETS["ADMINS"]:
+#         uid = get_users().get('user_id')
+#         print(uid)
+    
 
 @bot.my_chat_member_handler()
 async def chat_update(update):
     if update.chat.type not in ['channel', 'supergroup']:
         await bot.leave_chat(update.chat.id)
         return
-
     if update.new_chat_member.status == 'administrator':
         channel_add({
             'id': update.chat.id,
@@ -107,18 +117,35 @@ async def chat_update(update):
             update.from_user.id,
             f'channel {update.chat.title} was added'
         )
+
     else:
         channel_remove(update.chat.id)
         await bot.leave_chat(update.chat.id)
 
+def check_query(u):
+    if not u.data:
+        return False
+    if not u.message:
+        return False
+    res = u.data.split('#')
+    if len(res) != 2:
+        return False
+    if res[0] not in['leave_chat', 'toggle_chat']:
+        return False
+    return True
 
-@bot.callback_query_handler()
+
+@bot.callback_query_handler(func=check_query)
 async def query_update(update):
+    action, cid = update.data.split('#')
+    if action == 'toggle_chat':
+        channel_toggle(int(cid))
+    elif action == 'leave_chat':
+        channel_remove(int(cid))
+        await bot.leave_chat(cid)
 
-    print(update.data)
-    # channel_toggle()
     await bot.edit_message_reply_markup(
-        update.message.sender_chat.id,
+        update.from_user.id,
         update.message.id,
         reply_markup=await get_keyboard_chats(bot)
     )
