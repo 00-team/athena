@@ -1,10 +1,10 @@
 [Unit]
-Description=Gort Bot
+Description=Athena Bot
 
 [Service]
 Type=simple
 User=root
-ExecStart=/site/gort/.env/bin/python /site/gort/bot/main.py
+ExecStart=/bots/athena/.env/bin/python /bots/athena/main.py
 Environment=PYTHONUNBUFFERED=1
 Restart=always
 
