@@ -21,6 +21,10 @@ def require_joined(func):
         not_joined = []
         user_id = message.from_user.id
 
+        if user_id in SECRETS['ADMINS']:
+            await func(message)
+            return
+
         for channel in get_channels():
             if not channel['enable']:
                 continue
