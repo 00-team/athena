@@ -87,11 +87,14 @@ def check_forwarded(m):
 )
 @require_joined
 async def send_message(message):
-    exp = check_user(message.from_user.id)
+    exp = check_user(message.from_user.id) 
+    h = exp // 3600
+    m = exp % 3600 // 60
+    s = exp % 3600 % 60
     if exp:
         await bot.reply_to(
             message,
-            f'شما به تازگی پیام ارسال کردید، لطفا صبر کنید. {exp}s'
+            f'شما به تازگی پیام ارسال کردید برای ارسال مجدد پیام باید {h} : {m} : {s} صبر کنید.'
         )
         return
 
