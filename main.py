@@ -89,7 +89,10 @@ def check_forwarded(m):
 async def send_message(message):
     exp = check_user(message.from_user.id)
     if exp:
-        bot.reply_to(message, f'you already send a message. wait about {exp}s')
+        await bot.reply_to(
+            message,
+            f'you already send a message. wait about {exp}s'
+        )
         return
 
     await bot.forward_message(
