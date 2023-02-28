@@ -6,8 +6,7 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from src.database import channel_add, channel_remove, channel_toggle
 from src.database import check_user, get_channels, get_keyboard_chats
-from src.database import setup_databases
-from src.database import get_users
+from src.database import get_users, setup_databases
 from src.logger import get_logger
 from src.settings import SECRETS
 
@@ -31,17 +30,21 @@ def require_joined(func):
                 continue
 
             chat_id = channel['id']
-            try: member = await bot.get_chat_member(
-                chat_id=chat_id,
-                user_id=user_id,
+            try:
+                member = await bot.get_chat_member(
+                    chat_id=chat_id,
+                    user_id=user_id,
                 )
-
-            except:
                 if member.status in ['left', 'kicked']:
                     chat = await bot.get_chat(chat_id)
                     not_joined.append(
-                    [InlineKeyboardButton(chat.title, url=chat.invite_link)]
+                        [InlineKeyboardButton(
+                            chat.title, url=chat.invite_link)]
                     )
+
+            except Exception:
+                channel_remove(chat_id)
+                return
 
         if not_joined:
             await bot.send_message(
@@ -63,12 +66,14 @@ async def start(message):
     if user_id in SECRETS['ADMINS']:
         await bot.reply_to(
             message,
-            'Markup',
+            'list of all channels',
             reply_markup=await get_keyboard_chats(bot)
         )
-
     else:
-        await bot.reply_to(message, 'hi this is test')
+        await bot.reply_to(
+            message,
+            'welcome. send your message to be forwarded'
+        )
 
 
 def check_forwarded(m):
@@ -100,7 +105,7 @@ async def send_message(message):
 #     if user_id in SECRETS["ADMINS"]:
 #         uid = get_users().get('user_id')
 #         print(uid)
-    
+
 
 @bot.my_chat_member_handler()
 async def chat_update(update):
@@ -122,6 +127,7 @@ async def chat_update(update):
         channel_remove(update.chat.id)
         await bot.leave_chat(update.chat.id)
 
+
 def check_query(u):
     if not u.data:
         return False
@@ -130,7 +136,7 @@ def check_query(u):
     res = u.data.split('#')
     if len(res) != 2:
         return False
-    if res[0] not in['leave_chat', 'toggle_chat']:
+    if res[0] not in ['leave_chat', 'toggle_chat']:
         return False
     return True
 
