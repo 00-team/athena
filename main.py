@@ -42,9 +42,10 @@ def require_joined(func):
                             chat.title, url=chat.invite_link)]
                     )
 
-            except Exception:
+            except Exception as e:
+                logger.exception(e)
                 channel_remove(chat_id)
-                return
+                continue
 
         if not_joined:
             await bot.send_message(
