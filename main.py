@@ -6,7 +6,7 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from src.database import channel_add, channel_remove, channel_toggle
 from src.database import check_user, get_channels, get_keyboard_chats
-from src.database import get_users, setup_databases
+from src.database import setup_databases
 from src.logger import get_logger
 from src.settings import SECRETS
 
@@ -87,14 +87,16 @@ def check_forwarded(m):
 )
 @require_joined
 async def send_message(message):
-    exp = check_user(message.from_user.id) 
+    exp = check_user(message.from_user.id)
+
     h = exp // 3600
     m = exp % 3600 // 60
     s = exp % 3600 % 60
+
     if exp:
         await bot.reply_to(
             message,
-            f'شما به تازگی پیام ارسال کردید برای ارسال مجدد پیام باید {h} : {m} : {s} صبر کنید.'
+            f'شما به تازگی پیام ارسال کردید برای ارسال مجدد پیام باید {h}:{m}:{s} صبر کنید.'
         )
         return
 
