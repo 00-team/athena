@@ -51,14 +51,16 @@ async def get_keyboard_chats(bot):
     chats = []
     for c in _CHANNEL_DB:
         enable = '✅' if c['enable'] else '❌'
-        leave = '⛔' 
         chat = await bot.get_chat(c['id'])
 
         chats.append([
             InlineKeyboardButton(chat.title, url=chat.invite_link),
-            InlineKeyboardButton(enable,callback_data=f'toggle_chat#{chat.id}'),
-            InlineKeyboardButton(leave, callback_data=f'leave_chat#{chat.id}')
-            ])
+            InlineKeyboardButton(
+                enable,
+                callback_data=f'toggle_chat#{chat.id}'
+            ),
+            InlineKeyboardButton('⛔', callback_data=f'leave_chat#{chat.id}')
+        ])
 
     return InlineKeyboardMarkup(chats)
 
@@ -99,6 +101,7 @@ def channel_add(channel):
     _CHANNEL_DB.append(channel)
     _save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
 
+
 def channel_remove(channel_id: int):
     global _CHANNEL_DB
 
@@ -116,4 +119,3 @@ def channel_toggle(channel_id: int):
             _CHANNEL_DB[idx] = c
             _save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
             break
-        
