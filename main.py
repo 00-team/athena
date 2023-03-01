@@ -50,7 +50,7 @@ def require_joined(func):
         if not_joined:
             await bot.send_message(
                 user_id,
-                'join this channels first',
+                'اول مطمئن شوید که در کانال های زیر عضو شدید.',
                 reply_markup=InlineKeyboardMarkup(not_joined)
             )
 
@@ -73,7 +73,7 @@ async def start(message):
     else:
         await bot.reply_to(
             message,
-            'welcome. send your message to be forwarded'
+            'خوش آمدید، برای ارسال بنر در کانال بنر خود را فوروارد کنید.'
         )
 
 
@@ -87,11 +87,14 @@ def check_forwarded(m):
 )
 @require_joined
 async def send_message(message):
-    exp = check_user(message.from_user.id)
+    exp = check_user(message.from_user.id) 
+    h = exp // 3600
+    m = exp % 3600 // 60
+    s = exp % 3600 % 60
     if exp:
         await bot.reply_to(
             message,
-            f'you already send a message. wait about {exp}s'
+            f'شما به تازگی پیام ارسال کردید برای ارسال مجدد پیام باید {h} : {m} : {s} صبر کنید.'
         )
         return
 
