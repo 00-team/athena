@@ -12,7 +12,7 @@ USER_DB_PATH = DATA_DIR / 'users.json'
 CHANNEL_DB_PATH = DATA_DIR / 'channels.json'
 
 
-EXPIRE_TIME = 3 * 60 * 60
+EXPIRE_TIME = 15 * 60
 
 
 with open(BASE_DIR / 'secrets.json') as f:
