@@ -66,7 +66,7 @@ async def get_keyboard_chats(bot):
     btns = [[
         InlineKeyboardButton(
             f'forward: {fe}',
-            callback_data='toggle_forwards'
+            callback_data='toggle_forwards#1'
         )
     ]]
 
