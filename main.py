@@ -69,7 +69,7 @@ async def start(message):
         await bot.reply_to(
             message,
             'list of all channels',
-            reply_markup=await get_keyboard_chats(bot)
+            reply_markup = await get_keyboard_chats(bot)
         )
     else:
         await bot.reply_to(
@@ -89,7 +89,7 @@ def check_forwarded(m):
 @require_joined
 async def send_message(message):
     if not is_forwards_enable():
-        await bot.reply_to(message, 'forwards are disabled')
+        await bot.reply_to(message, 'فعلا ربات خاموشه وقتی اومدم فور میزنم تا اون موقع میتونی از گروه جفج دیدن کنی @joinforjoindayli')
         return
 
     exp = check_user(message.from_user.id)
