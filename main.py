@@ -69,7 +69,7 @@ async def start(message):
         await bot.reply_to(
             message,
             'list of all channels',
-            reply_markup = await get_keyboard_chats(bot)
+            reply_markup=await get_keyboard_chats(bot)
         )
     else:
         await bot.reply_to(
@@ -84,15 +84,19 @@ def check_forwarded(m):
 
 @bot.message_handler(
     func=check_forwarded,
-    content_types=['text','photo']
+    content_types=['text', 'photo']
 )
 @require_joined
 async def send_message(message):
     if not is_forwards_enable():
-        await bot.reply_to(message, 'فعلا ربات خاموشه وقتی اومدم فور میزنم تا اون موقع میتونی از گروه جفج دیدن کنی @joinforjoindayli')
+        await bot.reply_to(
+            message,
+            ('فعلا ربات خاموشه وقتی اومدم فور میزنم تا اون موقع میتونی از'
+             ' گروه جفج دیدن کنی @joinforjoindayli')
+        )
         return
 
-    exp = check_user(message.from_user.id)
+    exp = check_user(message.from_user)
 
     h = exp // 3600
     m = exp % 3600 // 60
@@ -119,8 +123,14 @@ async def forward_to_all(message):
     if user_id not in SECRETS["ADMINS"]:
         return
 
-    users = get_users().keys()
-    await bot.send_message(user_id, ', '.join(users))
+    text = ''
+    for uid, val in get_users().items():
+        if isinstance(val, int) or not val['username']:
+            continue
+
+        text += val['username'] + ' , '
+
+    await bot.send_message(user_id, text)
 
 
 @bot.my_chat_member_handler()

@@ -86,18 +86,26 @@ async def get_keyboard_chats(bot):
     return InlineKeyboardMarkup(btns)
 
 
-def check_user(user_id):
-    user_id = str(user_id)
+def check_user(user):
+    user_id = str(user.id)
 
     if user_id not in _USER_DB:
         logger.debug(f'{user_id=} dose not exists in the database')
 
-        _USER_DB[user_id] = now() + EXPIRE_TIME
+        # _USER_DB[user_id] = now() + EXPIRE_TIME
+        _USER_DB[user_id] = {
+            'expires': now() + EXPIRE_TIME,
+            'username': user.username
+        }
         _save_db(_USER_DB, USER_DB_PATH)
 
         return 0
 
-    expire_date = _USER_DB[user_id] - now()
+    value = _USER_DB[user_id]
+    if isinstance(value, int):
+        expire_date = value - now()
+    else:
+        expire_date = value['expires'] - now()
 
     if expire_date > 0:
         logger.debug(f'{user_id=} exists | {expire_date}s')
@@ -105,7 +113,10 @@ def check_user(user_id):
 
     logger.debug(f'{user_id=} exists and the time is expired')
 
-    _USER_DB[user_id] = now() + EXPIRE_TIME
+    _USER_DB[user_id] = {
+        'expires': now() + EXPIRE_TIME,
+        'username': user.username
+    }
     _save_db(_USER_DB, USER_DB_PATH)
 
     return 0
