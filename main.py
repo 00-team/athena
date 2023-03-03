@@ -6,7 +6,8 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from src.database import channel_add, channel_remove, channel_toggle
 from src.database import check_user, get_channels, get_keyboard_chats
-from src.database import get_users, setup_databases
+from src.database import get_users, is_forwards_enable, setup_databases
+from src.database import toggle_forwards
 from src.logger import get_logger
 from src.settings import SECRETS
 
@@ -87,6 +88,10 @@ def check_forwarded(m):
 )
 @require_joined
 async def send_message(message):
+    if not is_forwards_enable():
+        await bot.reply_to(message, 'forwards are disabled')
+        return
+
     exp = check_user(message.from_user.id)
 
     h = exp // 3600
@@ -96,7 +101,8 @@ async def send_message(message):
     if exp:
         await bot.reply_to(
             message,
-            f'شما به تازگی پیام ارسال کردید برای ارسال مجدد پیام باید {h}:{m}:{s} صبر کنید.'
+            (f'شما به تازگی پیام ارسال کردید برای ارسال'
+             f' مجدد پیام باید {h}:{m}:{s} صبر کنید.')
         )
         return
 
@@ -148,7 +154,7 @@ def check_query(u):
     if len(res) != 2:
         return False
 
-    if res[0] not in ['leave_chat', 'toggle_chat']:
+    if res[0] not in ['leave_chat', 'toggle_chat', 'toggle_forwards']:
         return False
 
     return True
@@ -165,6 +171,9 @@ async def query_update(update):
     elif action == 'leave_chat':
         if (await bot.leave_chat(cid)):
             channel_remove(cid)
+
+    elif action == 'toggle_forwards':
+        toggle_forwards()
 
     await bot.edit_message_reply_markup(
         update.from_user.id,

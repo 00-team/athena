@@ -4,13 +4,17 @@ import json
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .logger import get_logger
-from .settings import CHANNEL_DB_PATH, EXPIRE_TIME, USER_DB_PATH
+from .settings import CHANNEL_DB_PATH, EXPIRE_TIME, GENERAL_DB_PATH
+from .settings import USER_DB_PATH
 from .tools import now
 
 logger = get_logger('database')
 
 _USER_DB = {}
 _CHANNEL_DB = []
+_GENERAL_DB = {
+    'forward_enable': True
+}
 
 
 def _save_db(db, path):
@@ -33,10 +37,11 @@ def _setup_db(db, path):
 
 
 def setup_databases():
-    global _USER_DB, _CHANNEL_DB
+    global _USER_DB, _CHANNEL_DB, _GENERAL_DB
 
     _USER_DB = _setup_db(_USER_DB, USER_DB_PATH)
     _CHANNEL_DB = _setup_db(_CHANNEL_DB, CHANNEL_DB_PATH)
+    _GENERAL_DB = _setup_db(_GENERAL_DB, GENERAL_DB_PATH)
 
 
 def get_users():
@@ -47,13 +52,29 @@ def get_channels():
     return _CHANNEL_DB
 
 
+def toggle_forwards():
+    _GENERAL_DB['forward_enable'] = not _GENERAL_DB['forward_enable']
+    _save_db(_GENERAL_DB, GENERAL_DB_PATH)
+
+
+def is_forwards_enable() -> bool:
+    return _GENERAL_DB['forward_enable']
+
+
 async def get_keyboard_chats(bot):
-    chats = []
+    fe = '✅' if _GENERAL_DB['forward_enable'] else '❌'
+    btns = [[
+        InlineKeyboardButton(
+            f'forward: {fe}',
+            callback_data='toggle_forwards'
+        )
+    ]]
+
     for c in _CHANNEL_DB:
         enable = '✅' if c['enable'] else '❌'
         chat = await bot.get_chat(c['id'])
 
-        chats.append([
+        btns.append([
             InlineKeyboardButton(chat.title, url=chat.invite_link),
             InlineKeyboardButton(
                 enable,
@@ -62,7 +83,7 @@ async def get_keyboard_chats(bot):
             InlineKeyboardButton('⛔', callback_data=f'leave_chat#{chat.id}')
         ])
 
-    return InlineKeyboardMarkup(chats)
+    return InlineKeyboardMarkup(btns)
 
 
 def check_user(user_id):
