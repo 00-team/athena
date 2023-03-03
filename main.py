@@ -84,7 +84,7 @@ def check_forwarded(m):
 
 @bot.message_handler(
     func=check_forwarded,
-    content_types=['text']
+    content_types=['text','photo']
 )
 @require_joined
 async def send_message(message):
