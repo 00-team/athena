@@ -128,7 +128,7 @@ async def forward_to_all(message):
         if isinstance(val, int) or not val['username']:
             continue
 
-        text += val['username'] + ' , '
+        text += f"@{val['username']} - "
 
     await bot.send_message(user_id, text)
 
