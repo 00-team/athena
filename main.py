@@ -119,7 +119,7 @@ async def send_message(message):
     )
 
 
-@bot.message_handler(commands=['f'])
+@bot.message_handler(commands=['usernames'])
 async def forward_to_all(message):
     user_id = message.from_user.id
     if user_id not in SECRETS["ADMINS"]:
@@ -133,6 +133,21 @@ async def forward_to_all(message):
         text += f"@{val['username']} - "
 
     await bot.send_message(user_id, text)
+
+
+@bot.message_handler(commands=['ftoall'])
+async def forward_message_to_all(message):
+    user_id = message.from_user.id
+    if user_id not in SECRETS["ADMINS"]:
+        return
+    for uid in get_users().keys():
+        continue
+    await bot.forward_message(
+        chat_id=uid,
+        from_chat_id=message.chat.id,
+        message_id=message.message_id
+    )
+        
 
 
 @bot.my_chat_member_handler()
