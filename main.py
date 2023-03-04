@@ -92,7 +92,7 @@ async def send_message(message):
         await bot.reply_to(
             message,
             ('فعلا ربات خاموشه وقتی اومدم فور میزنم تا اون موقع میتونی از'
-             ' گروه جفج دیدن کنی @joinforjoindayli')
+             ' گروه جفج دیدن کنی @joinforjoindaily')
         )
         return
 
