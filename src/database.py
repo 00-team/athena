@@ -77,6 +77,7 @@ async def get_keyboard_chats(bot):
         btns.append([
             InlineKeyboardButton(
                 chat.title,
+                url='t.me/i007c'
                 # url=chat.invite_link
             ),
             InlineKeyboardButton(
