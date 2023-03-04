@@ -82,6 +82,7 @@ async def get_keyboard_chats(bot):
             ),
             InlineKeyboardButton('⛔', callback_data=f'leave_chat#{chat.id}')
         ])
+        break
 
     return InlineKeyboardMarkup(btns)
 
