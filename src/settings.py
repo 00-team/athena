@@ -13,8 +13,7 @@ CHANNEL_DB_PATH = DATA_DIR / 'channels.json'
 GENERAL_DB_PATH = DATA_DIR / 'generals.json'
 
 
-EXPIRE_TIME = 15 * 60
-
+EXPIRE_TIME = 1
 
 with open(BASE_DIR / 'secrets.json') as f:
     SECRETS = json.load(f)

@@ -141,12 +141,11 @@ async def forward_message_to_all(message):
     if user_id not in SECRETS["ADMINS"]:
         return
     for uid in get_users().keys():
-        continue
-    await bot.forward_message(
-        chat_id=uid,
-        from_chat_id=message.chat.id,
-        message_id=message.message_id
-    )
+        await bot.forward_message(
+            chat_id=int(uid),
+            from_chat_id=message.chat.id,
+            message_id=message.message_id
+        )
         
 
 
