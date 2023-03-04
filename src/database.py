@@ -75,7 +75,7 @@ async def get_keyboard_chats(bot):
         chat = await bot.get_chat(c['id'])
 
         btns.append([
-            InlineKeyboardButton(chat.title, url=chat.invite_link),
+            InlineKeyboardButton('chat.title', url=chat.invite_link),
             InlineKeyboardButton(
                 enable,
                 callback_data=f'toggle_chat#{chat.id}'
