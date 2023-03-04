@@ -15,6 +15,7 @@ logger = get_logger()
 
 bot = AsyncTeleBot(SECRETS['TOKEN'])
 MAIN_CHANNEL = SECRETS['CHANNEL']
+FORWARD_ALL = {}
 
 
 def require_joined(func):
@@ -90,6 +91,17 @@ def check_forwarded(m):
 )
 @require_joined
 async def send_message(message):
+    user_id = message.from_user.id
+
+    if FORWARD_ALL.pop(user_id, False):
+        for uid in get_users().keys():
+            await bot.forward_message(
+                chat_id=int(uid),
+                from_chat_id=message.chat.id,
+                message_id=message.message_id
+            )
+        return
+
     if not is_forwards_enable():
         await bot.reply_to(
             message,
@@ -120,7 +132,7 @@ async def send_message(message):
 
 
 @bot.message_handler(commands=['usernames'])
-async def forward_to_all(message):
+async def get_all_usernames(message):
     user_id = message.from_user.id
     if user_id not in SECRETS["ADMINS"]:
         return
@@ -136,17 +148,13 @@ async def forward_to_all(message):
 
 
 @bot.message_handler(commands=['ftoall'])
-async def forward_message_to_all(message):
+async def forward_to_all(message):
     user_id = message.from_user.id
     if user_id not in SECRETS["ADMINS"]:
         return
-    for uid in get_users().keys():
-        await bot.forward_message(
-            chat_id=int(uid),
-            from_chat_id=message.chat.id,
-            message_id=message.message_id
-        )
-        
+
+    FORWARD_ALL[user_id] = True
+    await bot.reply_to(message, 'ok. now forward your message')
 
 
 @bot.my_chat_member_handler()
