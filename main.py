@@ -38,6 +38,8 @@ def require_joined(func):
                 )
                 if member.status in ['left', 'kicked']:
                     chat = await bot.get_chat(chat_id)
+                    if not chat.invite_link:
+                        continue
                     not_joined.append(
                         [InlineKeyboardButton(
                             chat.title, url=chat.invite_link)]

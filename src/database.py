@@ -73,6 +73,8 @@ async def get_keyboard_chats(bot):
     for c in _CHANNEL_DB:
         enable = '✅' if c['enable'] else '❌'
         chat = await bot.get_chat(c['id'])
+        if not chat.invite_link:
+            enable += ' invalid chat'
 
         btns.append([
             InlineKeyboardButton(
