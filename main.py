@@ -2,6 +2,7 @@
 import asyncio
 
 from telebot.async_telebot import AsyncTeleBot
+from telebot.asyncio_helper import ApiTelegramException
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from src.database import channel_add, channel_remove, channel_toggle
@@ -54,7 +55,7 @@ def require_joined(func):
                             chat.title, url=chat.invite_link)]
                     )
 
-            except Exception as e:
+            except ApiTelegramException as e:
                 logger.exception(e)
                 channel_remove(chat_id)
                 continue
@@ -103,11 +104,15 @@ async def send_message(message):
 
     if FORWARD_ALL.pop(user_id, False):
         for uid in get_users().keys():
-            await bot.forward_message(
-                chat_id=int(uid),
-                from_chat_id=message.chat.id,
-                message_id=message.message_id
-            )
+            try:
+                await bot.forward_message(
+                    chat_id=int(uid),
+                    from_chat_id=message.chat.id,
+                    message_id=message.message_id
+                )
+            except ApiTelegramException as e:
+                logger.exception(e)
+
         return
 
     if not is_forwards_enable():
@@ -170,13 +175,6 @@ async def forward_to_all(message):
 @bot.message_handler(commands=['test'])
 @require_admin
 async def test_cmd(message):
-    c = None
-    try:
-        c = await bot.get_chat(5)
-    except Exception as e:
-        logger.exception(e)
-
-    logger.debug('chat:' + str(c))
     await bot.reply_to(message, 'TEST COMMAND')
 
 
