@@ -170,7 +170,12 @@ async def forward_to_all(message):
 @bot.message_handler(commands=['test'])
 @require_admin
 async def test_cmd(message):
-    c = await bot.get_chat(5)
+    c = None
+    try:
+        c = await bot.get_chat(5)
+    except Exception as e:
+        logger.exception(e)
+
     logger.debug('chat:' + str(c))
     await bot.reply_to(message, 'TEST COMMAND')
 
