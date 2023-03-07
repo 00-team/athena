@@ -18,6 +18,14 @@ MAIN_CHANNEL = SECRETS['CHANNEL']
 FORWARD_ALL = {}
 
 
+def require_admin(func):
+    async def decorator(update):
+        if update.from_user.id in SECRETS['ADMINS']:
+            return await func(update)
+
+    return decorator
+
+
 def require_joined(func):
     async def decorator(message):
         not_joined = []
@@ -132,29 +140,39 @@ async def send_message(message):
 
 
 @bot.message_handler(commands=['usernames'])
+@require_admin
 async def get_all_usernames(message):
     user_id = message.from_user.id
-    if user_id not in SECRETS["ADMINS"]:
-        return
 
-    text = ''
-    for uid, val in get_users().items():
+    users = get_users().items()
+    text = f'user count: {len(users)}\n'
+
+    for uid, val in users:
         if isinstance(val, int) or not val['username']:
             continue
 
-        text += f"@{val['username']} - "
+        text += f"@{val['username']} "
 
     await bot.send_message(user_id, text)
 
 
 @bot.message_handler(commands=['ftoall'])
+@require_admin
 async def forward_to_all(message):
     user_id = message.from_user.id
-    if user_id not in SECRETS["ADMINS"]:
-        return
 
-    FORWARD_ALL[user_id] = True
-    await bot.reply_to(message, 'ok. now forward your message')
+    FORWARD_ALL[user_id] = not FORWARD_ALL.get(user_id, False)
+    await bot.reply_to(
+        message, f'ok. forward your message: {FORWARD_ALL[user_id]}'
+    )
+
+
+@bot.message_handler(commands=['test'])
+@require_admin
+async def test_cmd(message):
+    c = await bot.get_chat(5)
+    logger.debug('chat:' + str(c))
+    await bot.reply_to(message, 'TEST COMMAND')
 
 
 @bot.my_chat_member_handler()

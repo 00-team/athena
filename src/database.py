@@ -74,7 +74,7 @@ async def get_keyboard_chats(bot):
         enable = '✅' if c['enable'] else '❌'
         chat = await bot.get_chat(c['id'])
         if not chat.invite_link:
-            enable += ' invalid chat'
+            enable = '⚠'
 
         btns.append([
             InlineKeyboardButton(
@@ -95,7 +95,7 @@ def check_user(user):
     user_id = str(user.id)
 
     if user_id not in _USER_DB:
-        logger.debug(f'{user_id=} dose not exists in the database')
+        # logger.debug(f'{user_id=} dose not exists in the database')
 
         # _USER_DB[user_id] = now() + EXPIRE_TIME
         _USER_DB[user_id] = {
@@ -113,10 +113,10 @@ def check_user(user):
         expire_date = value['expires'] - now()
 
     if expire_date > 0:
-        logger.debug(f'{user_id=} exists | {expire_date}s')
+        # logger.debug(f'{user_id=} exists | {expire_date}s')
         return expire_date
 
-    logger.debug(f'{user_id=} exists and the time is expired')
+    # logger.debug(f'{user_id=} exists and the time is expired')
 
     _USER_DB[user_id] = {
         'expires': now() + EXPIRE_TIME,
