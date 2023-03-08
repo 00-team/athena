@@ -64,6 +64,6 @@ def get_logger(package='main'):
 logging.config.dictConfig({
     'version': 1,
     'formatters': {
-        'main': MAIN_FORMATTER
+        'main': 'src.logger.MAIN_FORMATTER'
     }
 })
