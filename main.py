@@ -96,7 +96,7 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     if FORWARD_ALL.pop(user.id, False):
-        await ctx.job_queue.run_once(
+        ctx.job_queue.run_once(
             send_msg_to_all, 2,
             chat_id=msg.chat.id,
             user_id=user.id
