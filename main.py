@@ -159,9 +159,12 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         data=msg.message_id,
     )
 
-    await msg.reply_text(
-        f'پیام شما بعد از {FORWARD_DELAY // 60} دقیقه ارسال خواهد شد. 🐧'
-    )
+    await msg.reply_text((
+        'پست شما با موفقیت برای ادمین ارسال شد در صورت تایید'
+        ' ،در چنل گذاشته میشود.\n\n'
+        'مطمعن شوید پست زیر رو به چنلتون فور زدید\n'
+        'https://t.me/daily_gostardeh/95'
+    ))
 
     # await msg.forward(MAIN_CHANNEL)
 
