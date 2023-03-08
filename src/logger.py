@@ -46,18 +46,18 @@ class DailyRotating(FileHandler):
 
 
 def get_logger(package='main'):
-    logger = logging.getLogger(package)
+    logger = logging.getLogger('main')
 
-    logger.setLevel(logging.DEBUG)
-
-    file_handler = DailyRotating(package)
-    file_handler.setFormatter(MAIN_FORMATTER)
-    logger.addHandler(file_handler)
-
-    strm_handler = StreamHandler()
-    strm_handler.setFormatter(MAIN_FORMATTER)
-    logger.addHandler(strm_handler)
-
+    # logger.setLevel(logging.DEBUG)
+    #
+    # file_handler = DailyRotating(package)
+    # file_handler.setFormatter(MAIN_FORMATTER)
+    # logger.addHandler(file_handler)
+    #
+    # strm_handler = StreamHandler()
+    # strm_handler.setFormatter(MAIN_FORMATTER)
+    # logger.addHandler(strm_handler)
+    #
     return logger
 
 
