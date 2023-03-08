@@ -3,10 +3,11 @@
 import html
 import json
 import traceback
+from time import sleep
 
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.error import Forbidden, TelegramError
+from telegram.error import Forbidden, RetryAfter, TelegramError
 from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
@@ -80,8 +81,25 @@ async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def send_msg_to_all(ctx: ContextTypes.DEFAULT_TYPE):
-    await ctx.bot.send_message(ctx.job.chat_id, 'from job')
-    pass
+    for uid in get_users().keys():
+        sleep(5)
+        uid = int(uid)
+        try:
+            chat = ctx.bot.get_chat(uid)
+            if chat.type != 'private':
+                return
+
+            await ctx.bot.forward_message(
+                uid,
+                from_chat_id=ctx.job.chat_id,
+                message_id=ctx.job.data,
+            )
+        except RetryAfter as e:
+            sleep(e.retry_after + 10)
+        except Forbidden:
+            pass
+        except TelegramError as e:
+            logger.exception(e)
 
 
 @require_joined
@@ -99,16 +117,10 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         ctx.job_queue.run_once(
             send_msg_to_all, 2,
             chat_id=msg.chat.id,
-            user_id=user.id
+            user_id=user.id,
+            data=msg.message_id
         )
         await msg.reply_text('in developemnt ... 🐧')
-        # for uid in get_users().keys():
-        #     try:
-        #         await msg.forward(int(uid))
-        #     except Forbidden:
-        #         pass
-        #     except TelegramError as e:
-        #         logger.exception(e)
 
         return
 
