@@ -73,8 +73,8 @@ async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
         f'<pre>context.user_data = {html.escape(str(ctx.user_data))}</pre>\n\n'
         f'<pre>{html.escape(tb_string)}</pre>'
     )
+    logger.debug(message)
 
-    # Finally, send the message
     await ctx.bot.send_message(
         chat_id=SECRETS['DEVELOPER'], text=message, parse_mode=ParseMode.HTML
     )
