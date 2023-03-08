@@ -18,7 +18,7 @@ from shared.database import is_forwards_enable, setup_databases
 from shared.database import toggle_forwards
 from shared.dependencies import require_admin, require_joined
 from shared.logger import get_logger
-from shared.settings import SECRETS
+from shared.settings import FORWARD_DELAY, SECRETS
 
 logger = get_logger()
 
@@ -102,6 +102,14 @@ async def send_all_job(ctx: ContextTypes.DEFAULT_TYPE):
             logger.exception(e)
 
 
+async def forward_to_channel_job(ctx: ContextTypes.DEFAULT_TYPE):
+    await ctx.bot.forward_message(
+        MAIN_CHANNEL,
+        from_chat_id=ctx.job.chat_id,
+        message_id=ctx.job.data,
+    )
+
+
 @require_joined
 async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = update.message
@@ -144,7 +152,18 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    await msg.forward(MAIN_CHANNEL)
+    ctx.job_queue.run_once(
+        forward_to_channel_job, FORWARD_DELAY,
+        chat_id=msg.chat.id,
+        user_id=user.id,
+        data=msg.message_id,
+    )
+
+    await msg.reply_text(
+        f'پیام شما بعد از {FORWARD_DELAY} دقیقه ارسال خواهد شد. 🐧'
+    )
+
+    # await msg.forward(MAIN_CHANNEL)
 
 
 async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
