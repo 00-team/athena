@@ -160,7 +160,7 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     )
 
     await msg.reply_text(
-        f'پیام شما بعد از {FORWARD_DELAY} دقیقه ارسال خواهد شد. 🐧'
+        f'پیام شما بعد از {FORWARD_DELAY // 60} دقیقه ارسال خواهد شد. 🐧'
     )
 
     # await msg.forward(MAIN_CHANNEL)
