@@ -1,5 +1,4 @@
 
-import asyncio
 
 from telebot.asyncio_helper import ApiTelegramException
 from telegram import ForceReply, Update
@@ -11,7 +10,7 @@ from src.database import check_user, get_keyboard_chats, get_users
 from src.database import is_forwards_enable, setup_databases, toggle_forwards
 from src.dependencies import require_admin, require_joined
 from src.logger import get_logger
-from src.settings import SECRETS, bot
+from src.settings import SECRETS
 
 logger = get_logger()
 
@@ -20,29 +19,26 @@ MAIN_CHANNEL = SECRETS['CHANNEL']
 FORWARD_ALL = {}
 
 
-@bot.message_handler(commands=['start'])
 @require_joined
-async def start(message):
-    user_id = message.from_user.id
-    if user_id in SECRETS['ADMINS']:
-        await bot.reply_to(
-            message,
+async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user = update.message.from_user
+    if user.id in SECRETS['ADMINS']:
+        await update.message.reply_text(
             'list of all channels',
-            reply_markup=await get_keyboard_chats(bot)
+            reply_markup=await get_keyboard_chats(ctx.bot)
         )
     else:
-        await bot.reply_to(
-            message,
-            'خوش آمدید، برای ارسال بنر در کانال بنر خود را فوروارد کنید.'
+        await update.message.reply_text(
+            'خوش آمدید، برای ارسال بنر در کانال بنر خود را فوروارد کنید.',
         )
 
 
-@bot.message_handler(
-    func=(
-        lambda m: m.forward_from_chat and m.forward_from_chat.type == 'channel'
-    ),
-    content_types=['text', 'photo']
-)
+# @bot.message_handler(
+#     func=(
+#         lambda m: m.forward_from_chat and m.forward_from_chat.type == 'channel'
+#     ),
+#     content_types=['text', 'photo']
+# )
 @require_joined
 async def send_message(message):
     user_id = message.from_user.id
@@ -89,7 +85,7 @@ async def send_message(message):
     )
 
 
-@bot.message_handler(commands=['usernames'])
+# @bot.message_handler(commands=['usernames'])
 @require_admin
 async def get_all_usernames(message):
     user_id = message.from_user.id
@@ -106,7 +102,7 @@ async def get_all_usernames(message):
     await bot.send_message(user_id, text)
 
 
-@bot.message_handler(commands=['ftoall'])
+# @bot.message_handler(commands=['ftoall'])
 @require_admin
 async def forward_to_all(message):
     user_id = message.from_user.id
@@ -117,13 +113,7 @@ async def forward_to_all(message):
     )
 
 
-@bot.message_handler(commands=['test'])
-@require_admin
-async def test_cmd(message):
-    await bot.reply_to(message, 'TEST COMMAND')
-
-
-@bot.my_chat_member_handler()
+# @bot.my_chat_member_handler()
 async def chat_update(update):
     if update.chat.type not in ['channel', 'supergroup']:
         await bot.leave_chat(update.chat.id)
@@ -160,7 +150,7 @@ def check_query(u):
     return True
 
 
-@bot.callback_query_handler(func=check_query)
+# @bot.callback_query_handler(func=check_query)
 async def query_update(update):
     action, cid = update.data.split('#')
     cid = int(cid)

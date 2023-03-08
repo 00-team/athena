@@ -2,8 +2,6 @@
 import json
 from pathlib import Path
 
-from telebot.async_telebot import AsyncTeleBot
-
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / 'data'
 
@@ -19,5 +17,3 @@ EXPIRE_TIME = 15 * 60
 
 with open(BASE_DIR / 'secrets.json') as f:
     SECRETS = json.load(f)
-
-bot = AsyncTeleBot(SECRETS['TOKEN'])
