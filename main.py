@@ -79,6 +79,11 @@ async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def send_msg_to_all(ctx: ContextTypes.DEFAULT_TYPE):
+    await ctx.bot.send_message(ctx.job.chat_id, 'from job')
+    pass
+
+
 @require_joined
 async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = update.message
@@ -91,13 +96,19 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     if FORWARD_ALL.pop(user.id, False):
-        for uid in get_users().keys():
-            try:
-                await msg.forward(int(uid))
-            except Forbidden:
-                pass
-            except TelegramError as e:
-                logger.exception(e)
+        await ctx.job_queue.run_once(
+            send_msg_to_all, 2,
+            chat_id=msg.chat.id,
+            user_id=user.id
+        )
+        await msg.reply_text('in developemnt ... 🐧')
+        # for uid in get_users().keys():
+        #     try:
+        #         await msg.forward(int(uid))
+        #     except Forbidden:
+        #         pass
+        #     except TelegramError as e:
+        #         logger.exception(e)
 
         return
 
