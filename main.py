@@ -1,76 +1,20 @@
 
 import asyncio
 
-from telebot.async_telebot import AsyncTeleBot
 from telebot.asyncio_helper import ApiTelegramException
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from src.database import channel_add, channel_remove, channel_toggle
-from src.database import check_user, get_channels, get_keyboard_chats
-from src.database import get_users, is_forwards_enable, setup_databases
-from src.database import toggle_forwards
+from src.database import check_user, get_keyboard_chats, get_users
+from src.database import is_forwards_enable, setup_databases, toggle_forwards
+from src.dependencies import require_admin, require_joined
 from src.logger import get_logger
-from src.settings import SECRETS
+from src.settings import SECRETS, bot
 
 logger = get_logger()
 
-bot = AsyncTeleBot(SECRETS['TOKEN'])
+
 MAIN_CHANNEL = SECRETS['CHANNEL']
 FORWARD_ALL = {}
-
-
-def require_admin(func):
-    async def decorator(update):
-        if update.from_user.id in SECRETS['ADMINS']:
-            return await func(update)
-
-    return decorator
-
-
-def require_joined(func):
-    async def decorator(message):
-        not_joined = []
-        user_id = message.from_user.id
-
-        if user_id in SECRETS['ADMINS']:
-            await func(message)
-            return
-
-        for channel in get_channels():
-            if not channel['enable']:
-                continue
-
-            chat_id = channel['id']
-            try:
-                member = await bot.get_chat_member(
-                    chat_id=chat_id,
-                    user_id=user_id,
-                )
-                if member.status in ['left', 'kicked']:
-                    chat = await bot.get_chat(chat_id)
-                    if not chat.invite_link:
-                        continue
-                    not_joined.append(
-                        [InlineKeyboardButton(
-                            chat.title, url=chat.invite_link)]
-                    )
-
-            except ApiTelegramException as e:
-                logger.exception(e)
-                channel_remove(chat_id)
-                continue
-
-        if not_joined:
-            await bot.send_message(
-                user_id,
-                'اول مطمئن شوید که در کانال های زیر عضو شدید.',
-                reply_markup=InlineKeyboardMarkup(not_joined)
-            )
-
-        else:
-            await func(message)
-
-    return decorator
 
 
 @bot.message_handler(commands=['start'])

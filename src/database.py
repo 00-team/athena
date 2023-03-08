@@ -17,14 +17,14 @@ _GENERAL_DB = {
 }
 
 
-def _save_db(db, path):
+def save_db(db, path):
     with open(path, 'w') as f:
         json.dump(db, f)
 
 
-def _setup_db(db, path):
+def setup_db(db, path):
     if not path.exists():
-        _save_db(db, path)
+        save_db(db, path)
         return db
 
     with open(path, 'r') as f:
@@ -39,9 +39,9 @@ def _setup_db(db, path):
 def setup_databases():
     global _USER_DB, _CHANNEL_DB, _GENERAL_DB
 
-    _USER_DB = _setup_db(_USER_DB, USER_DB_PATH)
-    _CHANNEL_DB = _setup_db(_CHANNEL_DB, CHANNEL_DB_PATH)
-    _GENERAL_DB = _setup_db(_GENERAL_DB, GENERAL_DB_PATH)
+    _USER_DB = setup_db(_USER_DB, USER_DB_PATH)
+    _CHANNEL_DB = setup_db(_CHANNEL_DB, CHANNEL_DB_PATH)
+    _GENERAL_DB = setup_db(_GENERAL_DB, GENERAL_DB_PATH)
 
 
 def get_users():
@@ -54,7 +54,7 @@ def get_channels():
 
 def toggle_forwards():
     _GENERAL_DB['forward_enable'] = not _GENERAL_DB['forward_enable']
-    _save_db(_GENERAL_DB, GENERAL_DB_PATH)
+    save_db(_GENERAL_DB, GENERAL_DB_PATH)
 
 
 def is_forwards_enable() -> bool:
@@ -102,7 +102,7 @@ def check_user(user):
             'expires': now() + EXPIRE_TIME,
             'username': user.username
         }
-        _save_db(_USER_DB, USER_DB_PATH)
+        save_db(_USER_DB, USER_DB_PATH)
 
         return 0
 
@@ -122,7 +122,7 @@ def check_user(user):
         'expires': now() + EXPIRE_TIME,
         'username': user.username
     }
-    _save_db(_USER_DB, USER_DB_PATH)
+    save_db(_USER_DB, USER_DB_PATH)
 
     return 0
 
@@ -136,7 +136,7 @@ def channel_add(channel):
             return
 
     _CHANNEL_DB.append(channel)
-    _save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
+    save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
 
 
 def channel_remove(channel_id: int):
@@ -145,7 +145,7 @@ def channel_remove(channel_id: int):
     for c in _CHANNEL_DB:
         if c['id'] == channel_id:
             _CHANNEL_DB.remove(c)
-            _save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
+            save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
 
 
 def channel_toggle(channel_id: int):
@@ -154,5 +154,5 @@ def channel_toggle(channel_id: int):
         if c['id'] == channel_id:
             c['enable'] = not c['enable']
             _CHANNEL_DB[idx] = c
-            _save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
+            save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
             break
