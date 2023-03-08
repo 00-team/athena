@@ -30,9 +30,9 @@ def require_joined(func):
         not_joined = []
         user = update.message.from_user
 
-        # if user.id in SECRETS['ADMINS']:
-        #     await func(update, ctx)
-        #     return
+        if user.id in SECRETS['ADMINS']:
+            await func(update, ctx)
+            return
 
         for channel in get_channels():
             if not channel['enable']:
@@ -55,7 +55,7 @@ def require_joined(func):
                 channel_remove(chat_id)
                 continue
 
-        if not_joined or True:
+        if not_joined:
             await ctx.bot.send_message(
                 user.id,
                 'اول مطمئن شوید که در کانال های زیر عضو شدید.',
