@@ -64,6 +64,43 @@ def get_logger(package='main'):
 logging.config.dictConfig({
     'version': 1,
     'formatters': {
-        'main': 'src.logger.MAIN_FORMATTER'
+        'term': {
+            'format': (
+                '\033[32m%(asctime)s.%(msecs)03d \033[34m<%(levelname)s> '
+                '[\033[33m%(module)s\033[0m]: %(message)s'
+            ),
+            'datefmt': '%H:%M:%S'
+        },
+        'file': {
+            'format': (
+                '%(asctime)s.%(msecs)03d <%(levelname)s> '
+                '[%(module)s]: %(message)s'
+            ),
+            'datefmt': '%H:%M:%S'
+        },
+    },
+    'handlers': {
+        'term': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'term'
+        },
+        'root_file': {
+            'class': 'src.logger.DailyRotating',
+            'formatter': 'file',
+            'dirname': 'root'
+        },
+        'main_file': {
+            'class': 'src.logger.DailyRotating',
+            'formatter': 'file',
+            'dirname': 'main'
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['term', 'root_file']
+        },
+        'main': {
+            'handlers': ['term', 'main_file']
+        }
     }
 })
