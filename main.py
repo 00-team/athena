@@ -6,7 +6,7 @@ import traceback
 
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.error import TelegramError
+from telegram.error import Forbidden, TelegramError
 from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
@@ -94,6 +94,8 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         for uid in get_users().keys():
             try:
                 await msg.forward(int(uid))
+            except Forbidden:
+                pass
             except TelegramError as e:
                 logger.exception(e)
 

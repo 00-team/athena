@@ -56,8 +56,7 @@ def require_joined(func):
                 continue
 
         if not_joined:
-            await ctx.bot.send_message(
-                user.id,
+            await update.message.reply_text(
                 'اول مطمئن شوید که در کانال های زیر عضو شدید.',
                 reply_markup=InlineKeyboardMarkup(not_joined)
             )
