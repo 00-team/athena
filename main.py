@@ -34,12 +34,10 @@ async def start(message):
         )
 
 
-def check_forwarded(m):
-    return m and m.forward_from_chat and m.forward_from_chat.type == 'channel'
-
-
 @bot.message_handler(
-    func=check_forwarded,
+    func=(
+        lambda m: m.forward_from_chat and m.forward_from_chat.type == 'channel'
+    ),
     content_types=['text', 'photo']
 )
 @require_joined
