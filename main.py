@@ -42,7 +42,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 @require_admin
-async def forward_to_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def send_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     FORWARD_ALL[user.id] = not FORWARD_ALL.get(user.id, False)
 
@@ -80,7 +80,7 @@ async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
     )
 
 
-async def send_msg_to_all(ctx: ContextTypes.DEFAULT_TYPE):
+async def send_all_job(ctx: ContextTypes.DEFAULT_TYPE):
     for uid in get_users().keys():
         sleep(5)
         uid = int(uid)
@@ -115,13 +115,12 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if FORWARD_ALL.pop(user.id, False):
         ctx.job_queue.run_once(
-            send_msg_to_all, 2,
+            send_all_job, 1,
             chat_id=msg.chat.id,
             user_id=user.id,
             data=msg.message_id
         )
-        await msg.reply_text('in developemnt ... 🐧')
-
+        await msg.reply_text('running... 🐧')
         return
 
     if not is_forwards_enable():
@@ -208,7 +207,7 @@ def main():
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('help', help_command))
     application.add_handler(CommandHandler('usernames', get_all_usernames))
-    application.add_handler(CommandHandler('ftoall', forward_to_all))
+    application.add_handler(CommandHandler('send_all', send_all))
 
     application.add_handler(ChatMemberHandler(
         my_chat_update, ChatMemberHandler.MY_CHAT_MEMBER
