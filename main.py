@@ -51,12 +51,6 @@ async def send_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     )
 
 
-@require_admin
-async def cancel_send_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    for j in ctx.job_queue.get_jobs_by_name('send_all'):
-        j.schedule_removal()
-
-
 async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
     logger.error(
         msg='Exception while handling an update:',
@@ -88,7 +82,6 @@ async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def send_all_job(ctx: ContextTypes.DEFAULT_TYPE):
     for uid in get_users().keys():
-        logger.debug(f'job.r: {ctx.job.removed}')
         sleep(5)
         uid = int(uid)
         try:
@@ -216,7 +209,6 @@ def main():
     application.add_handler(CommandHandler('help', help_command))
     application.add_handler(CommandHandler('usernames', get_all_usernames))
     application.add_handler(CommandHandler('send_all', send_all))
-    application.add_handler(CommandHandler('cancel_send_all', cancel_send_all))
 
     application.add_handler(ChatMemberHandler(
         my_chat_update, ChatMemberHandler.MY_CHAT_MEMBER
