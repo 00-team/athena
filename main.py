@@ -1,6 +1,6 @@
 
 
-from telegram import ForceReply, Update
+from telegram import Update
 from telegram.error import TelegramError
 from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
@@ -45,12 +45,6 @@ async def forward_to_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     )
 
 
-# @bot.message_handler(
-#     func=(
-#         lambda m: m.forward_from_chat and m.forward_from_chat.type == 'channel'
-#     ),
-#     content_types=['text', 'photo']
-# )
 @require_joined
 async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = update.message
@@ -66,13 +60,8 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         for uid in get_users().keys():
             try:
                 await msg.forward(int(uid))
-                # await bot.forward_message(
-                #     chat_id=int(uid),
-                #     from_chat_id=message.chat.id,
-                #     message_id=message.message_id
-                # )
-            except TelegramError:
-                pass
+            except TelegramError as e:
+                logger.exception(e)
 
         return
 
@@ -97,11 +86,6 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     await msg.forward(MAIN_CHANNEL)
-    # await ctx.bot.forward_message(
-    #     chat_id=MAIN_CHANNEL,
-    #     from_chat_id=update.message.chat.id,
-    #     message_id=update.message.message_id
-    # )
 
 
 async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -164,6 +148,8 @@ def main():
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('help', help_command))
     application.add_handler(CommandHandler('usernames', get_all_usernames))
+    application.add_handler(CommandHandler('ftoall', forward_to_all))
+
     application.add_handler(ChatMemberHandler(
         my_chat_update, ChatMemberHandler.MY_CHAT_MEMBER
     ))
