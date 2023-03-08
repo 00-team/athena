@@ -46,7 +46,7 @@ class DailyRotating(FileHandler):
 
 
 def get_logger(package='main'):
-    logger = logging.getLogger('main')
+    logger = logging.getLogger()
 
     # logger.setLevel(logging.DEBUG)
     #
@@ -94,12 +94,6 @@ logging.config.dictConfig({
             'formatter': 'file',
             'dirname': 'main'
         },
-    },
-    'loggers': {
-        'main': {
-            'handlers': ['term', 'main_file'],
-            'level': 'DEBUG'
-        }
     },
     'root': {
         'handlers': ['term', 'root_file'],

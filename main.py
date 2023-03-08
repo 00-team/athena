@@ -2,6 +2,9 @@
 import asyncio
 
 from telebot.asyncio_helper import ApiTelegramException
+from telegram import ForceReply, Update
+from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import MessageHandler, filters
 
 from src.database import channel_add, channel_remove, channel_toggle
 from src.database import check_user, get_keyboard_chats, get_users
@@ -179,10 +182,20 @@ async def query_update(update):
     )
 
 
+async def help_command(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text('Help!')
+
+
 def main():
     logger.info('Starting Athena')
     setup_databases()
-    asyncio.run(bot.polling())
+
+    application = Application.builder().token(SECRETS['TOKEN']).build()
+
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))
+
+    application.run_polling()
 
 
 if __name__ == '__main__':
