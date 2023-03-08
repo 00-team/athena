@@ -58,3 +58,11 @@ def get_logger(package='main'):
     logger.addHandler(strm_handler)
 
     return logger
+
+
+logging.config.dictConfig({
+    'version': 1,
+    'formatters': {
+        'main': MAIN_FORMATTER
+    }
+})
