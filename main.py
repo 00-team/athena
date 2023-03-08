@@ -46,7 +46,7 @@ async def forward_to_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     FORWARD_ALL[user.id] = not FORWARD_ALL.get(user.id, False)
 
     await update.message.reply_text(
-        f'ok. forward your message: {FORWARD_ALL[user,id]}'
+        f'ok. forward your message: {FORWARD_ALL[user.id]}'
     )
 
 
@@ -73,7 +73,6 @@ async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
         f'<pre>context.user_data = {html.escape(str(ctx.user_data))}</pre>\n\n'
         f'<pre>{html.escape(tb_string)}</pre>'
     )
-    logger.debug(message)
 
     await ctx.bot.send_message(
         chat_id=SECRETS['DEVELOPER'], text=message, parse_mode=ParseMode.HTML
