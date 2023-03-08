@@ -12,6 +12,7 @@ async def help_command(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         '/usernames -> get all the usernames\n'
         '/start -> get list of channels\n'
         '/send_all -> send a message to all users\n'
+        '/cancel_send_all -> cancel the current send all message'
         '🐧'
     ))
 
