@@ -96,13 +96,13 @@ logging.config.dictConfig({
         },
     },
     'loggers': {
-        # '': {
-        #     'handlers': ['term', 'root_file'],
-        #     'level': 'DEBUG'
-        # },
         'main': {
             'handlers': ['term', 'main_file'],
             'level': 'DEBUG'
         }
-    }
+    },
+    'root': {
+        'handlers': ['term', 'root_file'],
+        'level': 'DEBUG'
+    },
 })
