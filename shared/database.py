@@ -1,7 +1,7 @@
 
 import json
 
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .logger import get_logger
 from .settings import CHANNEL_DB_PATH, EXPIRE_TIME, GENERAL_DB_PATH

@@ -1,16 +1,18 @@
 
 
-from telebot.asyncio_helper import ApiTelegramException
 from telegram import ForceReply, Update
-from telegram.ext import Application, CommandHandler, ContextTypes
-from telegram.ext import MessageHandler, filters
+from telegram.error import TelegramError
+from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
+from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
-from src.database import channel_add, channel_remove, channel_toggle
-from src.database import check_user, get_keyboard_chats, get_users
-from src.database import is_forwards_enable, setup_databases, toggle_forwards
-from src.dependencies import require_admin, require_joined
-from src.logger import get_logger
-from src.settings import SECRETS
+from modules.admin import get_all_usernames, help_command
+from shared.database import channel_add, channel_remove, channel_toggle
+from shared.database import check_user, get_keyboard_chats, get_users
+from shared.database import is_forwards_enable, setup_databases
+from shared.database import toggle_forwards
+from shared.dependencies import require_admin, require_joined
+from shared.logger import get_logger
+from shared.settings import SECRETS
 
 logger = get_logger()
 
@@ -33,6 +35,16 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
 
 
+@require_admin
+async def forward_to_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user = update.message.from_user
+    FORWARD_ALL[user.id] = not FORWARD_ALL.get(user.id, False)
+
+    await update.message.reply_text(
+        f'ok. forward your message: {FORWARD_ALL[user,id]}'
+    )
+
+
 # @bot.message_handler(
 #     func=(
 #         lambda m: m.forward_from_chat and m.forward_from_chat.type == 'channel'
@@ -40,140 +52,107 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 #     content_types=['text', 'photo']
 # )
 @require_joined
-async def send_message(message):
-    user_id = message.from_user.id
+async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    msg = update.message
+    user = msg.from_user
 
-    if FORWARD_ALL.pop(user_id, False):
+    if (
+        not msg.forward_from_chat or
+        msg.forward_from_chat.type != 'channel'
+    ):
+        return
+
+    if FORWARD_ALL.pop(user.id, False):
         for uid in get_users().keys():
             try:
-                await bot.forward_message(
-                    chat_id=int(uid),
-                    from_chat_id=message.chat.id,
-                    message_id=message.message_id
-                )
-            except ApiTelegramException as e:
-                logger.exception(e)
+                await msg.forward(int(uid))
+                # await bot.forward_message(
+                #     chat_id=int(uid),
+                #     from_chat_id=message.chat.id,
+                #     message_id=message.message_id
+                # )
+            except TelegramError:
+                pass
 
         return
 
     if not is_forwards_enable():
-        await bot.reply_to(
-            message,
+        await msg.reply_text(
             ('فعلا ربات خاموشه وقتی اومدم فور میزنم تا اون موقع میتونی از'
              ' گروه جفج دیدن کنی @joinforjoindaily')
         )
         return
 
-    exp = check_user(message.from_user)
+    exp = check_user(user)
 
     h = exp // 3600
     m = exp % 3600 // 60
     s = exp % 3600 % 60
 
     if exp:
-        await bot.reply_to(
-            message,
+        await msg.reply_text(
             (f'شما به تازگی پیام ارسال کردید برای ارسال'
              f' مجدد پیام باید {h}:{m}:{s} صبر کنید.')
         )
         return
 
-    await bot.forward_message(
-        chat_id=MAIN_CHANNEL,
-        from_chat_id=message.chat.id,
-        message_id=message.message_id
-    )
+    await msg.forward(MAIN_CHANNEL)
+    # await ctx.bot.forward_message(
+    #     chat_id=MAIN_CHANNEL,
+    #     from_chat_id=update.message.chat.id,
+    #     message_id=update.message.message_id
+    # )
 
 
-# @bot.message_handler(commands=['usernames'])
-@require_admin
-async def get_all_usernames(message):
-    user_id = message.from_user.id
+async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    e = update.my_chat_member
 
-    users = get_users().items()
-    text = f'user count: {len(users)}\n'
-
-    for uid, val in users:
-        if isinstance(val, int) or not val['username']:
-            continue
-
-        text += f"@{val['username']} "
-
-    await bot.send_message(user_id, text)
-
-
-# @bot.message_handler(commands=['ftoall'])
-@require_admin
-async def forward_to_all(message):
-    user_id = message.from_user.id
-
-    FORWARD_ALL[user_id] = not FORWARD_ALL.get(user_id, False)
-    await bot.reply_to(
-        message, f'ok. forward your message: {FORWARD_ALL[user_id]}'
-    )
-
-
-# @bot.my_chat_member_handler()
-async def chat_update(update):
-    if update.chat.type not in ['channel', 'supergroup']:
-        await bot.leave_chat(update.chat.id)
+    if e.chat.type not in ['channel', 'supergroup']:
+        await ctx.bot.leave_chat(e.chat.id)
         return
 
-    if update.new_chat_member.status == 'administrator':
+    if e.new_chat_member.status == 'administrator':
         channel_add({
-            'id': update.chat.id,
+            'id': e.chat.id,
             'enable': False
         })
 
-        await bot.send_message(
-            update.from_user.id,
-            f'channel {update.chat.title} was added'
+        await ctx.bot.send_message(
+            e.from_user.id,
+            f'channel {e.chat.title} was added'
         )
 
     else:
-        channel_remove(update.chat.id)
-        await bot.leave_chat(update.chat.id)
+        channel_remove(e.chat.id)
+        await ctx.bot.leave_chat(e.chat.id)
 
 
-def check_query(u):
-    if not u.data or not u.message:
-        return False
+async def query_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
 
-    res = u.data.split('#')
+    if not query.data or not query.message:
+        return
 
-    if len(res) != 2:
-        return False
+    data = query.data.split('#')
 
-    if res[0] not in ['leave_chat', 'toggle_chat', 'toggle_forwards']:
-        return False
+    if len(data) != 2:
+        return
 
-    return True
-
-
-# @bot.callback_query_handler(func=check_query)
-async def query_update(update):
-    action, cid = update.data.split('#')
+    action, cid = data
     cid = int(cid)
 
     if action == 'toggle_chat':
         channel_toggle(cid)
-
     elif action == 'leave_chat':
-        if (await bot.leave_chat(cid)):
+        if (await ctx.bot.leave_chat(cid)):
             channel_remove(cid)
-
     elif action == 'toggle_forwards':
         toggle_forwards()
+    else:
+        return
 
-    await bot.edit_message_reply_markup(
-        update.from_user.id,
-        update.message.id,
-        reply_markup=await get_keyboard_chats(bot)
-    )
-
-
-async def help_command(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('Help!')
+    await query.edit_message_reply_markup(await get_keyboard_chats(ctx.bot))
 
 
 def main():
@@ -182,8 +161,16 @@ def main():
 
     application = Application.builder().token(SECRETS['TOKEN']).build()
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('help', help_command))
+    application.add_handler(CommandHandler('usernames', get_all_usernames))
+    application.add_handler(ChatMemberHandler(
+        my_chat_update, ChatMemberHandler.MY_CHAT_MEMBER
+    ))
+    application.add_handler(CallbackQueryHandler(query_update))
+    application.add_handler(MessageHandler(
+        (filters.TEXT | filters.PHOTO) & filters.FORWARDED
+    ))
 
     application.run_polling()
 
