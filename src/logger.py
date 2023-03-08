@@ -67,7 +67,7 @@ logging.config.dictConfig({
         'term': {
             'format': (
                 '\033[32m%(asctime)s.%(msecs)03d \033[34m<%(levelname)s> '
-                '[\033[33m%(module)s\033[0m]: %(message)s'
+                '\033[0m[\033[33m%(module)s\033[0m]: %(message)s'
             ),
             'datefmt': '%H:%M:%S'
         },
@@ -85,12 +85,12 @@ logging.config.dictConfig({
             'formatter': 'term'
         },
         'root_file': {
-            'class': 'src.logger.DailyRotating',
+            '()': DailyRotating,
             'formatter': 'file',
             'dirname': 'root'
         },
         'main_file': {
-            'class': 'src.logger.DailyRotating',
+            '()': DailyRotating,
             'formatter': 'file',
             'dirname': 'main'
         },
