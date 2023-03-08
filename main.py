@@ -85,7 +85,7 @@ async def send_msg_to_all(ctx: ContextTypes.DEFAULT_TYPE):
         sleep(5)
         uid = int(uid)
         try:
-            chat = ctx.bot.get_chat(uid)
+            chat = await ctx.bot.get_chat(uid)
             if chat.type != 'private':
                 return
 
