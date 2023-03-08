@@ -128,7 +128,7 @@ async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     e = update.my_chat_member
 
     if e.chat.type not in ['channel', 'supergroup']:
-        await ctx.bot.leave_chat(e.chat.id)
+        # await ctx.bot.leave_chat(e.chat.id)
         return
 
     if e.new_chat_member.status == 'administrator':
