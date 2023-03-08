@@ -237,7 +237,8 @@ def main():
     ))
     application.add_handler(CallbackQueryHandler(query_update))
     application.add_handler(MessageHandler(
-        (filters.TEXT | filters.PHOTO) & filters.FORWARDED,
+        ((filters.TEXT | filters.PHOTO) &
+         (filters.FORWARDED & filters.ChatType.PRIVATE)),
         send_message
     ))
 
