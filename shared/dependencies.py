@@ -51,8 +51,9 @@ def require_joined(func):
                             chat.title, url=chat.invite_link)]
                     )
 
-            except TelegramError:
-                channel_remove(chat_id)
+            except TelegramError as e:
+                logger.exception(e)
+                # channel_remove(chat_id)
                 continue
 
         if not_joined:
