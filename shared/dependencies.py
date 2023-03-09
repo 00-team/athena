@@ -1,6 +1,6 @@
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.error import TelegramError
+from telegram.error import TelegramError, TimedOut
 from telegram.ext import ContextTypes
 
 from .database import channel_remove, get_channels
@@ -51,6 +51,8 @@ def require_joined(func):
                             chat.title, url=chat.invite_link)]
                     )
 
+            except TimeoutError:
+                continue
             except TelegramError as e:
                 logger.exception(e)
                 # channel_remove(chat_id)
