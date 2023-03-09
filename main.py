@@ -57,6 +57,7 @@ async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
         msg='Exception while handling an update:',
         exc_info=ctx.error
     )
+    logger.debug(f'{isinstance(ctx.error, TelegramError)=}')
 
     tb_list = traceback.format_exception(
         None, ctx.error, ctx.error.__traceback__
