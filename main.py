@@ -177,12 +177,13 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     e = update.my_chat_member
+    status = e.new_chat_member.status
 
     if e.chat.type not in ['channel', 'supergroup']:
         # await ctx.bot.leave_chat(e.chat.id)
         return
 
-    if e.new_chat_member.status == 'administrator':
+    if status == 'administrator':
         channel_add({
             'id': e.chat.id,
             'enable': False
@@ -195,7 +196,8 @@ async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     else:
         channel_remove(e.chat.id)
-        await ctx.bot.leave_chat(e.chat.id)
+        if status not in ['left', 'kicked']:
+            await ctx.bot.leave_chat(e.chat.id)
 
 
 async def query_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
