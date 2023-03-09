@@ -12,6 +12,7 @@ from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
 from modules.admin import get_all_usernames, help_command
+from modules.chat import chat_member_update
 from shared.database import channel_add, channel_remove, channel_toggle
 from shared.database import check_user, get_keyboard_chats, get_users
 from shared.database import is_forwards_enable, setup_databases
@@ -234,6 +235,9 @@ def main():
 
     application.add_handler(ChatMemberHandler(
         my_chat_update, ChatMemberHandler.MY_CHAT_MEMBER
+    ))
+    application.add_handler(ChatMemberHandler(
+        chat_member_update, ChatMemberHandler.CHAT_MEMBER
     ))
     application.add_handler(CallbackQueryHandler(query_update))
     application.add_handler(MessageHandler(
