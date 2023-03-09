@@ -7,7 +7,7 @@ from time import sleep
 
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.error import Forbidden, RetryAfter, TelegramError
+from telegram.error import Forbidden, RetryAfter, TelegramError, TimedOut
 from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
@@ -53,11 +53,14 @@ async def send_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
+    if isinstance(ctx.error, TimedOut):
+        logger.error('a timedout error has occurred.')
+        return
+
     logger.error(
         msg='Exception while handling an update:',
         exc_info=ctx.error
     )
-    logger.debug(f'{isinstance(ctx.error, TelegramError)=}')
 
     tb_list = traceback.format_exception(
         None, ctx.error, ctx.error.__traceback__
@@ -76,6 +79,7 @@ async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
         f'<pre>context.user_data = {html.escape(str(ctx.user_data))}</pre>\n\n'
         f'<pre>{html.escape(tb_string)}</pre>'
     )
+    logger.debug('dev: ' + str(SECRETS['DEVELOPER']))
 
     await ctx.bot.send_message(
         chat_id=SECRETS['DEVELOPER'], text=message, parse_mode=ParseMode.HTML

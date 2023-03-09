@@ -51,7 +51,7 @@ def require_joined(func):
                             chat.title, url=chat.invite_link)]
                     )
 
-            except TimeoutError:
+            except TimedOut:
                 continue
             except TelegramError as e:
                 logger.exception(e)
