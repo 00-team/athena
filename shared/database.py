@@ -185,7 +185,7 @@ def channel_add_member(cid):
         _CHANNEL_DB[cid]['limit'] > 1 and
         _CHANNEL_DB[cid]['amount'] >= _CHANNEL_DB[cid]['limit']
     ):
-        del _CHANNEL_DB[cid]
+        _CHANNEL_DB[cid]['enable'] = False
 
     save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
 
