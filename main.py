@@ -52,7 +52,9 @@ async def send_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def send_all_job(ctx: ContextTypes.DEFAULT_TYPE):
-    for uid in get_users().keys():
+    users = get_users().copy()
+
+    for uid, udata in users.items():
         sleep(1)
         uid = int(uid)
         try:
@@ -69,7 +71,7 @@ async def send_all_job(ctx: ContextTypes.DEFAULT_TYPE):
             sleep(e.retry_after + 10)
             logger.info(f'[send_all]: retry_after {e.retry_after}')
         except Forbidden:
-            logger.info(f'[send_all]: forbidden {uid}')
+            logger.info(f'[send_all]: forbidden {uid} - {udata["username"]}')
         except NetworkError:
             pass
         except TelegramError as e:
