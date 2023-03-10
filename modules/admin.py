@@ -1,9 +1,19 @@
 
+import html
+import json
+import traceback
+
 from telegram import Update
+from telegram.constants import ParseMode
+from telegram.error import NetworkError
 from telegram.ext import ContextTypes
 
 from shared.database import get_users
 from shared.dependencies import require_admin
+from shared.logger import get_logger
+from shared.settings import SECRETS
+
+logger = get_logger('admin')
 
 
 @require_admin
@@ -29,3 +39,37 @@ async def get_all_usernames(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         text += f"@{val['username']} "
 
     await update.message.reply_text(text)
+
+
+async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
+    if isinstance(ctx.error, NetworkError):
+        logger.error('a network error has occurred.')
+        return
+
+    logger.error(
+        msg='Exception while handling an update:',
+        exc_info=ctx.error
+    )
+
+    tb_list = traceback.format_exception(
+        None, ctx.error, ctx.error.__traceback__
+    )
+    tb_string = ''.join(tb_list)
+
+    if isinstance(update, Update):
+        update_str = json.dumps(update.to_dict(), indent=2, ensure_ascii=False)
+    else:
+        update_str = str(update)
+
+    message = (
+        f'An exception was raised while handling an update\n\n'
+        f'<pre>{html.escape(update_str)}</pre>\n\n'
+        f'<pre>context.chat_data = {html.escape(str(ctx.chat_data))}</pre>\n\n'
+        f'<pre>context.user_data = {html.escape(str(ctx.user_data))}</pre>\n\n'
+        f'<pre>{html.escape(tb_string)}</pre>'
+    )
+    logger.debug('dev: ' + str(SECRETS['DEVELOPER']))
+
+    await ctx.bot.send_message(
+        chat_id=SECRETS['DEVELOPER'], text=message, parse_mode=ParseMode.HTML
+    )

@@ -1,22 +1,17 @@
 
 
-import html
-import json
-import traceback
 from time import sleep
 
 from telegram import Update
-from telegram.constants import ParseMode
-from telegram.error import Forbidden, NetworkError, RetryAfter, TelegramError
+from telegram.error import Forbidden, RetryAfter, TelegramError
 from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
-from modules.admin import get_all_usernames, help_command
-from modules.chat import chat_member_update
-from shared.database import channel_add, channel_remove, channel_toggle
-from shared.database import check_user, get_keyboard_chats, get_users
-from shared.database import is_forwards_enable, setup_databases
-from shared.database import toggle_forwards
+from modules.admin import error_handler, get_all_usernames, help_command
+from modules.chat import chat_member_update, my_chat_update
+from shared.database import channel_remove, channel_toggle, check_user
+from shared.database import get_keyboard_chats, get_users, is_forwards_enable
+from shared.database import setup_databases, toggle_forwards
 from shared.dependencies import require_admin, require_joined
 from shared.logger import get_logger
 from shared.settings import FORWARD_DELAY, SECRETS
@@ -49,40 +44,6 @@ async def send_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         f'ok. forward your message: {FORWARD_ALL[user.id]}'
-    )
-
-
-async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
-    if isinstance(ctx.error, NetworkError):
-        logger.error('a network error has occurred.')
-        return
-
-    logger.error(
-        msg='Exception while handling an update:',
-        exc_info=ctx.error
-    )
-
-    tb_list = traceback.format_exception(
-        None, ctx.error, ctx.error.__traceback__
-    )
-    tb_string = ''.join(tb_list)
-
-    if isinstance(update, Update):
-        update_str = json.dumps(update.to_dict(), indent=2, ensure_ascii=False)
-    else:
-        update_str = str(update)
-
-    message = (
-        f'An exception was raised while handling an update\n\n'
-        f'<pre>{html.escape(update_str)}</pre>\n\n'
-        f'<pre>context.chat_data = {html.escape(str(ctx.chat_data))}</pre>\n\n'
-        f'<pre>context.user_data = {html.escape(str(ctx.user_data))}</pre>\n\n'
-        f'<pre>{html.escape(tb_string)}</pre>'
-    )
-    logger.debug('dev: ' + str(SECRETS['DEVELOPER']))
-
-    await ctx.bot.send_message(
-        chat_id=SECRETS['DEVELOPER'], text=message, parse_mode=ParseMode.HTML
     )
 
 
@@ -173,31 +134,6 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ))
 
     # await msg.forward(MAIN_CHANNEL)
-
-
-async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    e = update.my_chat_member
-    status = e.new_chat_member.status
-
-    if e.chat.type not in ['channel', 'supergroup']:
-        # await ctx.bot.leave_chat(e.chat.id)
-        return
-
-    if status == 'administrator':
-        channel_add({
-            'id': e.chat.id,
-            'enable': False
-        })
-
-        await ctx.bot.send_message(
-            e.from_user.id,
-            f'channel {e.chat.title} was added'
-        )
-
-    else:
-        channel_remove(e.chat.id)
-        if status not in ['left', 'kicked']:
-            await ctx.bot.leave_chat(e.chat.id)
 
 
 async def query_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
