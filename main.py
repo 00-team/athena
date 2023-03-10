@@ -3,7 +3,7 @@
 from time import sleep
 
 from telegram import Update
-from telegram.error import Forbidden, RetryAfter, TelegramError
+from telegram.error import Forbidden, NetworkError, RetryAfter, TelegramError
 from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
@@ -53,7 +53,7 @@ async def send_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def send_all_job(ctx: ContextTypes.DEFAULT_TYPE):
     for uid in get_users().keys():
-        sleep(5)
+        sleep(1)
         uid = int(uid)
         try:
             chat = await ctx.bot.get_chat(uid)
@@ -67,7 +67,10 @@ async def send_all_job(ctx: ContextTypes.DEFAULT_TYPE):
             )
         except RetryAfter as e:
             sleep(e.retry_after + 10)
+            logger.info(f'[send_all]: retry_after {e.retry_after}')
         except Forbidden:
+            logger.info(f'[send_all]: forbidden {uid}')
+        except NetworkError:
             pass
         except TelegramError as e:
             logger.exception(e)
