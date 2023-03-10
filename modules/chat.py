@@ -6,14 +6,15 @@ from telegram.ext import ContextTypes
 
 from shared.database import channel_add, channel_remove
 from shared.logger import get_logger
+from shared.settings import SECRETS
 
 logger = get_logger(__package__)
-
-logger.debug('test from chat')
 
 
 async def chat_member_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     logger.info('chat member update ...')
+    logger.debug(json.dumps(update.to_dict(), indent=2))
+
     name = update.chat_member.chat.title
     user = update.chat_member.from_user.first_name
 

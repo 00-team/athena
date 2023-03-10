@@ -177,11 +177,11 @@ def main():
     application.add_handler(CommandHandler('send_all', send_all))
 
     application.add_handler(ChatMemberHandler(
-        chat_member_update, ChatMemberHandler.CHAT_MEMBER
+        chat_member_update, ChatMemberHandler.ANY_CHAT_MEMBER
     ))
-    application.add_handler(ChatMemberHandler(
-        my_chat_update, ChatMemberHandler.MY_CHAT_MEMBER
-    ))
+    # application.add_handler(ChatMemberHandler(
+    #     my_chat_update, ChatMemberHandler.MY_CHAT_MEMBER
+    # ))
 
     application.add_handler(CallbackQueryHandler(query_update))
     application.add_handler(MessageHandler(
