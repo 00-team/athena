@@ -146,8 +146,8 @@ def check_user(user):
     return 0
 
 
-def channel_add(channel_id):
-    _CHANNEL_DB[str(channel_id)] = {
+def channel_add(cid):
+    _CHANNEL_DB[str(cid)] = {
         'enable': False,
         'amount': 0,
         'limit': -1
@@ -155,10 +155,10 @@ def channel_add(channel_id):
     save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
 
 
-def channel_remove(channel_id):
+def channel_remove(cid):
     global _CHANNEL_DB
 
-    _CHANNEL_DB.pop(str(channel_id), None)
+    _CHANNEL_DB.pop(str(cid), None)
     save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
 
 
