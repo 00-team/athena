@@ -98,6 +98,18 @@ async def get_keyboard_chats(bot):
     return InlineKeyboardMarkup(btns)
 
 
+def user_add(user):
+    user_id = str(user.id)
+    if user_id in _USER_DB:
+        return
+
+    _USER_DB[user_id] = {
+        'expires': 0,
+        'username': user.username
+    }
+    save_db(_USER_DB, USER_DB_PATH)
+
+
 def check_user(user):
     user_id = str(user.id)
 

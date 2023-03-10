@@ -3,7 +3,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.error import NetworkError, TelegramError
 from telegram.ext import ContextTypes
 
-from .database import get_channels
+from .database import get_channels, user_add
 from .logger import get_logger
 from .settings import SECRETS
 
@@ -29,6 +29,7 @@ def require_joined(func):
 
         not_joined = []
         user = update.message.from_user
+        user_add(user)
 
         if user.id in SECRETS['ADMINS']:
             await func(update, ctx)
