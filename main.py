@@ -179,9 +179,9 @@ def main():
     application.add_handler(ChatMemberHandler(
         chat_member_update, ChatMemberHandler.ANY_CHAT_MEMBER
     ))
-    # application.add_handler(ChatMemberHandler(
-    #     my_chat_update, ChatMemberHandler.MY_CHAT_MEMBER
-    # ))
+    application.add_handler(ChatMemberHandler(
+        my_chat_update, ChatMemberHandler.MY_CHAT_MEMBER
+    ))
 
     application.add_handler(CallbackQueryHandler(query_update))
     application.add_handler(MessageHandler(
@@ -190,7 +190,7 @@ def main():
         send_message
     ))
 
-    application.run_polling()
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == '__main__':

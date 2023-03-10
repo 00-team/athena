@@ -6,7 +6,6 @@ from telegram.ext import ContextTypes
 
 from shared.database import channel_add, channel_remove
 from shared.logger import get_logger
-from shared.settings import SECRETS
 
 logger = get_logger(__package__)
 
