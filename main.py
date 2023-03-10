@@ -71,7 +71,11 @@ async def send_all_job(ctx: ContextTypes.DEFAULT_TYPE):
             sleep(e.retry_after + 10)
             logger.info(f'[send_all]: retry_after {e.retry_after}')
         except Forbidden:
-            logger.info(f'[send_all]: forbidden {uid} - {udata["username"]}')
+            username = None
+            if isinstance(udata, dict):
+                username = udata['username']
+
+            logger.info(f'[send_all]: forbidden {uid} - {username}')
         except NetworkError:
             pass
         except TelegramError as e:
