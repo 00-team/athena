@@ -110,6 +110,11 @@ def user_add(user):
     save_db(_USER_DB, USER_DB_PATH)
 
 
+def user_remove(user_id):
+    user_id = str(user_id)
+    _USER_DB.pop(user_id, None)
+
+
 def check_user(user):
     user_id = str(user.id)
 

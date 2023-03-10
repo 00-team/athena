@@ -12,7 +12,7 @@ from modules.chat import chat_member_update, my_chat_update
 from shared.database import channel_remove, channel_set_limit, channel_toggle
 from shared.database import check_user, get_keyboard_chats, get_users
 from shared.database import is_forwards_enable, setup_databases
-from shared.database import toggle_forwards
+from shared.database import toggle_forwards, user_remove
 from shared.dependencies import require_admin, require_joined
 from shared.logger import get_logger
 from shared.settings import FORWARD_DELAY, SECRETS
@@ -74,6 +74,9 @@ async def send_all_job(ctx: ContextTypes.DEFAULT_TYPE):
             username = None
             if isinstance(udata, dict):
                 username = udata['username']
+
+            if username is None:
+                user_remove(uid)
 
             logger.info(f'[send_all]: forbidden {uid} - {username}')
         except NetworkError:
