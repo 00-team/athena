@@ -21,8 +21,6 @@ async def chat_member_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    logger.debug(json.dumps(update.to_dict(), indent=2))
-
     e = update.my_chat_member
     status = e.new_chat_member.status
 
