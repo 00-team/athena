@@ -7,7 +7,7 @@ from time import sleep
 
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.error import Forbidden, RetryAfter, TelegramError, TimedOut
+from telegram.error import Forbidden, NetworkError, RetryAfter, TelegramError
 from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
@@ -53,8 +53,8 @@ async def send_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
-    if isinstance(ctx.error, TimedOut):
-        logger.error('a timedout error has occurred.')
+    if isinstance(ctx.error, NetworkError):
+        logger.error('a network error has occurred.')
         return
 
     logger.error(
