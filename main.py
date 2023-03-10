@@ -164,7 +164,10 @@ async def query_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         toggle_forwards()
     elif action == 'set_chat_limit':
         STATE['SCL'][query.from_user.id] = cid
-        await ctx.bot.send_message('ok. now send a number ...')
+        await ctx.bot.send_message(
+            query.from_user.id,
+            'ok. now send a number ...'
+        )
         return
     else:
         return
