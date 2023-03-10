@@ -176,3 +176,12 @@ def channel_add_member(cid):
         del _CHANNEL_DB[cid]
 
     save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
+
+
+def channel_set_limit(cid, limit):
+    cid = str(cid)
+    if cid not in _CHANNEL_DB:
+        return
+
+    _CHANNEL_DB[cid]['limit'] = limit
+    save_db(_CHANNEL_DB, CHANNEL_DB_PATH)

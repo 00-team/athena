@@ -8,11 +8,11 @@ from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
 from modules.admin import error_handler, get_all_usernames, help_command
-from modules.admin import set_chat_limit
 from modules.chat import chat_member_update, my_chat_update
-from shared.database import channel_remove, channel_toggle, check_user
-from shared.database import get_keyboard_chats, get_users, is_forwards_enable
-from shared.database import setup_databases, toggle_forwards
+from shared.database import channel_remove, channel_set_limit, channel_toggle
+from shared.database import check_user, get_keyboard_chats, get_users
+from shared.database import is_forwards_enable, setup_databases
+from shared.database import toggle_forwards
 from shared.dependencies import require_admin, require_joined
 from shared.logger import get_logger
 from shared.settings import FORWARD_DELAY, SECRETS
@@ -138,6 +138,20 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ))
 
     # await msg.forward(MAIN_CHANNEL)
+
+
+@require_admin
+async def set_chat_limit(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user = update.message.from_user
+    cid = STATE['SCL'].pop(user.id, 0)
+    if not cid:
+        return
+
+    limit = int(update.message.text)
+    channel_set_limit(cid, limit)
+    await update.message.reply_text(
+        'done. use /start\nset the limit to -1 for disabling it'
+    )
 
 
 async def query_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
