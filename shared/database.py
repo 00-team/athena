@@ -39,17 +39,6 @@ def setup_db(db, path):
 def setup_databases():
     global _USER_DB, _CHANNEL_DB, _GENERAL_DB
 
-    with open(CHANNEL_DB_PATH, 'r') as f:
-        ch = json.load(f)
-        if isinstance(ch, list):
-            for c in ch:
-                _CHANNEL_DB[str(c['id'])] = {
-                    'enable': c['enable'],
-                    'amount': 0,
-                    'limit': -1
-                }
-            save_db(_CHANNEL_DB, CHANNEL_DB_PATH)
-
     _USER_DB = setup_db(_USER_DB, USER_DB_PATH)
     _CHANNEL_DB = setup_db(_CHANNEL_DB, CHANNEL_DB_PATH)
     _GENERAL_DB = setup_db(_GENERAL_DB, GENERAL_DB_PATH)
@@ -90,11 +79,15 @@ async def get_keyboard_chats(bot):
 
         btns.append([
             InlineKeyboardButton(
-                f'{chat.title[:20]} - {cval["amount"]}/{cval["limit"]}',
+                chat.title,
                 url=chat.invite_link or 't.me/i007c'
             ),
         ])
         btns.append([
+            InlineKeyboardButton(
+                f'{cval["amount"]}/{cval["limit"]}',
+                callback_data=f'set_chat_limit#{chat.id}'
+            ),
             InlineKeyboardButton(
                 enable,
                 callback_data=f'toggle_chat#{chat.id}'

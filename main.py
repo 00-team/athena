@@ -8,6 +8,7 @@ from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
 from modules.admin import error_handler, get_all_usernames, help_command
+from modules.admin import set_chat_limit
 from modules.chat import chat_member_update, my_chat_update
 from shared.database import channel_remove, channel_toggle, check_user
 from shared.database import get_keyboard_chats, get_users, is_forwards_enable
@@ -20,7 +21,10 @@ logger = get_logger()
 
 
 MAIN_CHANNEL = SECRETS['CHANNEL']
-FORWARD_ALL = {}
+STATE = {
+    'FA': {},
+    'SCL': {}
+}
 
 
 @require_joined
@@ -40,10 +44,10 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 @require_admin
 async def send_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
-    FORWARD_ALL[user.id] = not FORWARD_ALL.get(user.id, False)
+    STATE['FA'][user.id] = not STATE['FA'].get(user.id, False)
 
     await update.message.reply_text(
-        f'ok. forward your message: {FORWARD_ALL[user.id]}'
+        f'ok. forward your message: {STATE["FA"][user.id]}'
     )
 
 
@@ -88,7 +92,7 @@ async def send_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ):
         return
 
-    if FORWARD_ALL.pop(user.id, False):
+    if STATE['FA'].pop(user.id, False):
         ctx.job_queue.run_once(
             send_all_job, 1,
             chat_id=msg.chat.id,
@@ -158,6 +162,10 @@ async def query_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             channel_remove(cid)
     elif action == 'toggle_forwards':
         toggle_forwards()
+    elif action == 'set_chat_limit':
+        STATE['SCL'][query.from_user.id] = cid
+        await ctx.bot.send_message('ok. now send a number ...')
+        return
     else:
         return
 
@@ -188,6 +196,10 @@ def main():
         ((filters.TEXT | filters.PHOTO) &
          (filters.FORWARDED & filters.ChatType.PRIVATE)),
         send_message
+    ))
+    application.add_handler(MessageHandler(
+        filters.TEXT & filters.Regex(r'^-?\d+$') & filters.ChatType.PRIVATE,
+        set_chat_limit
     ))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)

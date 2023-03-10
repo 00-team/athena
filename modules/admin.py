@@ -41,6 +41,11 @@ async def get_all_usernames(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text)
 
 
+@require_admin
+async def set_chat_limit(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    logger.debug(f'set chat limit: {update.message.text}')
+
+
 async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
     if isinstance(ctx.error, NetworkError):
         logger.error('a network error has occurred.')
