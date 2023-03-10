@@ -4,20 +4,20 @@ import json
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from shared.database import channel_add, channel_remove
+from shared.database import channel_add, channel_add_member, channel_remove
+from shared.database import get_users
 from shared.logger import get_logger
 
 logger = get_logger(__package__)
 
 
 async def chat_member_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    logger.info('chat member update ...')
-    logger.debug(json.dumps(update.to_dict(), indent=2))
+    chat = update.chat_member.chat
+    chat_member = update.chat_member.new_chat_member
+    user_id = str(chat_member.user.id)
 
-    name = update.chat_member.chat.title
-    user = update.chat_member.from_user.first_name
-
-    logger.info(f'chat {name}: {user}')
+    if chat_member.status == 'member' and user_id in get_users():
+        channel_add_member(chat.id)
 
 
 async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
@@ -31,10 +31,7 @@ async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     if status == 'administrator':
-        channel_add({
-            'id': e.chat.id,
-            'enable': False
-        })
+        channel_add(e.chat.id)
 
         await ctx.bot.send_message(
             e.from_user.id,

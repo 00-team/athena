@@ -3,7 +3,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.error import NetworkError, TelegramError
 from telegram.ext import ContextTypes
 
-from .database import channel_remove, get_channels
+from .database import get_channels
 from .logger import get_logger
 from .settings import SECRETS
 
@@ -34,22 +34,23 @@ def require_joined(func):
             await func(update, ctx)
             return
 
-        for channel in get_channels():
-            if not channel['enable']:
+        for cid, cval in get_channels().items():
+            cid = int(cid)
+            if not cval['enable']:
                 continue
 
-            chat_id = channel['id']
             try:
-                member = await ctx.bot.get_chat_member(chat_id, user.id)
+                member = await ctx.bot.get_chat_member(cid, user.id)
 
                 if member.status in ['left', 'kicked']:
-                    chat = await ctx.bot.get_chat(chat_id)
+                    chat = await ctx.bot.get_chat(cid)
                     if not chat.invite_link:
                         continue
-                    not_joined.append(
-                        [InlineKeyboardButton(
-                            chat.title, url=chat.invite_link)]
-                    )
+                    not_joined.append([
+                        InlineKeyboardButton(
+                            chat.title, url=chat.invite_link
+                        )
+                    ])
 
             except NetworkError:
                 continue
