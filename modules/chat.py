@@ -6,6 +6,8 @@ from shared.logger import get_logger
 
 logger = get_logger(__package__)
 
+logger.debug('test from chat')
+
 
 async def chat_member_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     logger.info('chat member update ...')
