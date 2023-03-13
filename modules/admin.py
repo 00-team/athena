@@ -28,26 +28,25 @@ async def help_command(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 
 @require_admin
-async def get_all_usernames(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+async def usernames(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     msg = update.message
-    users = get_users().items()
-    await msg.reply_text(f'user count: {len(users)} 🐧')
+    users = get_users().values()
 
-    size = 0
-    text = ''
+    text = f'user count: {len(users)} 🐧\n'
+    size = len(text)
 
-    for uid, val in users:
-        if isinstance(val, int) or not val['username']:
+    for data in users:
+        if isinstance(data, int) or not data['username']:
             continue
 
-        username = val['username']
+        username = data['username']
         add_size = len(username) + 2
 
         if size + add_size > 4000:
             await msg.reply_text(text)
             text = f'{len(users)} 🐧\n@{username} '
-            size = add_size
+            size = len(text)
         else:
             text += f'@{username} '
             size += add_size

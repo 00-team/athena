@@ -7,7 +7,7 @@ from telegram.error import Forbidden, NetworkError, RetryAfter, TelegramError
 from telegram.ext import Application, CallbackQueryHandler, ChatMemberHandler
 from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
 
-from modules.admin import error_handler, get_all_usernames, help_command
+from modules.admin import error_handler, help_command, usernames
 from modules.chat import chat_member_update, my_chat_update
 from shared.database import channel_remove, channel_set_limit, channel_toggle
 from shared.database import check_user, get_keyboard_chats, get_users
@@ -210,7 +210,7 @@ def main():
 
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CommandHandler('help', help_command))
-    application.add_handler(CommandHandler('usernames', get_all_usernames))
+    application.add_handler(CommandHandler('usernames', usernames))
     application.add_handler(CommandHandler('send_all', send_all))
 
     application.add_handler(ChatMemberHandler(
