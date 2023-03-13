@@ -44,9 +44,9 @@ async def get_all_usernames(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         username = val['username']
         add_size = len(username) + 2
 
-        if size + add_size > 1000:
+        if size + add_size > 4000:
             await msg.reply_text(text)
-            text = f'@{username} '
+            text = f'{len(users)} 🐧\n@{username} '
             size = add_size
         else:
             text += f'@{username} '
