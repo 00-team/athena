@@ -29,19 +29,11 @@ async def my_chat_update(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     if status == 'administrator':
-        if not e.chat.invite_link:
-            await ctx.bot.send_message(
-                user_id,
-                (f'chat {name} is invalid.\n'
-                 'cant get the invite link')
-            )
-            return
-
         channel_add(e.chat.id)
 
         await ctx.bot.send_message(
-            e.from_user.id,
-            f'channel {e.chat.title} was added ✅'
+            user_id,
+            f'channel {name} was added ✅'
         )
     else:
         channel_remove(e.chat.id)
