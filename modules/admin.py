@@ -2,6 +2,7 @@
 import html
 import json
 import traceback
+from io import StringIO
 
 from telegram import Update
 from telegram.constants import ParseMode
@@ -33,7 +34,9 @@ async def usernames(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = update.message
     users = get_users().values()
 
-    text = f'user count: {len(users)} 🐧\n'
+    text = StringIO()
+    text.write(f'user count: {len(users)} 🐧\n')
+
     size = len(text)
 
     for data in users:
@@ -44,14 +47,16 @@ async def usernames(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         add_size = len(username) + 2
 
         if size + add_size > 4000:
-            await msg.reply_text(text)
-            text = f'{len(users)} 🐧\n@{username} '
+            await msg.reply_text(text.getvalue())
+            text.seek(0)
+            text.truncate()
+            text.write(f'{len(users)} 🐧\n@{username} ')
             size = len(text)
         else:
-            text += f'@{username} '
+            text.write(f'@{username} ')
             size += add_size
 
-    await msg.reply_text(text)
+    await msg.reply_text(text.getvalue())
 
 
 async def error_handler(update: object, ctx: ContextTypes.DEFAULT_TYPE):
